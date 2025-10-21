@@ -178,3 +178,21 @@ h1 {
     margin-bottom: 25px;
     text-align: center;
 }
+/* Styling for Quit/Game Over Screen */
+.quit-container {
+    text-align: center;
+    padding: 50px;
+    background: rgba(100, 0, 0, 0.9); /* Deep Red Background */
+    border: 5px solid #ff0000; /* Bright Red Border */
+    border-radius: 10px;
+    width: 500px;
+    color: white;
+    box-shadow: 0 0 40px rgba(255, 0, 0, 0.7); /* Red Glow Effect */
+}
+
+.quit-container h2 {
+    color: #ffcc00; /* Gold text */
+    font-size: 4em;
+    margin-bottom: 20px;
+    text-shadow: 2px 2px 5px black;
+}
