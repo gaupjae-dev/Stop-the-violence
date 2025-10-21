@@ -39,4 +39,6 @@ function loadOptions() {
     showScreen('options-screen');
 }
 
-function quitGame() { showScreen('quit-screen'); }
+function quitGame() {
+    showScreen('quit-screen'); // The new, correct code
+}
