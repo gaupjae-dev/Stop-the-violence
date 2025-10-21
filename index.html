@@ -1,49 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    </head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>THE G.O.A.T. PROJECT</title>
+    <link rel="stylesheet" href="style.css">
+</head>
 <body>
     
-    <div class="main-menu-container" id="main-menu-container"><div class="missions-log-container" id="missions-screen" style="display: none;">
-        <h2>MISSIONS LOG</h2>
-        
-        <button class="mission-item" id="mission-1-button" onclick="startMission(1)">1. The Jump Start (Available)</button>
-        <button class="mission-item" id="mission-2-button" onclick="startMission(2)">2. The Rookie Contract (Locked)</button>
-        
-        <button class="menu-button" onclick="showMainMenu()">BACK</button>
-    </div>
-    <div class="my-player-container" id="my-player-screen" style="display: none;">
-        <h2>MY PLAYER STATS</h2>
-        <p><strong>Name:</strong> G.O.A.T. Dev</p>
-        <p><strong>Overall Rating:</strong> 75</p>
-        <p><strong>Position:</strong> Point Guard</p>
-        <p><strong>Current Mission:</strong> The Jump Start</p>
-        <br>
-        <button class="menu-button" onclick="showMainMenu()">BACK</button>
-    </div>
-    <div class="my-player-container" id="my-player-screen" style="display: none;">
-        <h2>MY PLAYER STATS</h2>
-        <p><strong>Name:</strong> G.O.A.T. Dev</p>
-        <p><strong>Overall Rating:</strong> 75</p>
-        <button class="menu-button" onclick="showMainMenu()">BACK</button>
-    </div>
-    <div class="options-container" id="options-screen" style="display: none;">
-        <div class="quit-container" id="quit-screen" style="display: none;">
-        <h2>GAME OVER</h2>
-        <p>Thanks for playing THE G.O.A.T. PROJECT demo!</p>
-        <p>You can close your browser tab now.</p>
-        <button class="menu-button" onclick="showMainMenu()">START NEW GAME</button>
-    </div>
-        <h2>OPTIONS</h2>
-        <p>VOLUME: [|||||||||||--]</p>
-        <p>DIFFICULTY: Rookie</p>
-        <p>LANGUAGE: English</p>
-        <br>
-        <button class="menu-button" onclick="showMainMenu()">BACK</button>
-    </div>
-    <script src="script.js"></script> 
-</body>
-</html>
+    <div class="main-menu-container" id="main-menu-container">
         <h1>THE G.O.A.T. PROJECT</h1>
         <button class="menu-button" onclick="loadMissions()">MISSIONS</button>
         <button class="menu-button" onclick="loadMyPlayer()">MY PLAYER</button>
@@ -53,14 +18,45 @@
 
     <div class="missions-log-container" id="missions-screen" style="display: none;">
         <h2>MISSIONS LOG</h2>
-        <button class="mission-item" onclick="startMission(1)">1. The Jump Start (Available)</button>
-        <button class="mission-item" onclick="startMission(2)">2. The Rookie Contract (Locked)</button>
+        
+        <button class="mission-item" id="mission-1-button" onclick="startMission(1)">1. The Jump Start (Available)</button>
+        <button class="mission-item" id="mission-2-button" onclick="startMission(2)">2. The Rookie Contract (Locked)</button>
+        
         <button class="menu-button" onclick="showMainMenu()">BACK</button>
     </div>
 
-    <script src="script.js"></script>
-</body>
-</html>
+    <div class="my-player-container" id="my-player-screen" style="display: none;">
+        <h2>MY PLAYER STATS</h2>
+        <p><strong>Name:</strong> G.O.A.T. Dev</p>
+        <p><strong>Overall Rating:</strong> 75</p>
+        <p><strong>Position:</strong> Point Guard</p>
+        
+        <p><strong>Current Mission:</strong> The Jump Start</p>
+        
+        <div class="progress-bar-container">
+            <div class="progress-bar" id="mission-progress-bar"></div>
+        </div>
+        
+        <br>
+        <button class="menu-button" onclick="showMainMenu()">BACK</button>
+    </div>
+
+    <div class="options-container" id="options-screen" style="display: none;">
+        <h2>OPTIONS</h2>
+        <p>VOLUME: [|||||||||||--]</p>
+        <p>DIFFICULTY: Rookie</p>
+        <p>LANGUAGE: English</p>
+        <br>
+        <button class="menu-button" onclick="showMainMenu()">BACK</button>
+    </div>
+
+    <div class="quit-container" id="quit-screen" style="display: none;">
+        <h2>GAME OVER</h2>
+        <p>Thanks for playing THE G.O.A.T. PROJECT demo!</p>
+        <p>You can close your browser tab now.</p>
+        <button class="menu-button" onclick="showMainMenu()">START NEW GAME</button>
+    </div>
+
     <script src="script.js"></script> 
 </body>
 </html>
