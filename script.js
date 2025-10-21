@@ -5,6 +5,7 @@ function showScreen(screenId) {
     document.getElementById('missions-screen').style.display = 'none';
 document.getElementById('my-player-screen').style.display = 'none';
     document.getElementById('options-screen').style.display = 'none';
+document.getElementById('quit-screen').style.display = 'none';
     // 2. Show the requested screen
     document.getElementById(screenId).style.display = 'block';
 }
@@ -38,6 +39,4 @@ function loadOptions() {
     showScreen('options-screen');
 }
 
-function quitGame() {
-    alert("QUITTING: Thanks for playing!");
-}
+function quitGame() { showScreen('quit-screen'); }
