@@ -19,8 +19,8 @@ function loadMissions() {
     showScreen('missions-screen');
     
     // 2. Update the mission button text based on player progress
-    let mission1Button = document.getElementById('mission-1-button'); // Looks for ID in HTML
-    let mission2Button = document.getElementById('mission-2-button'); // Looks for ID in HTML
+    let mission1Button = document.getElementById('mission-1-button');
+    let mission2Button = document.getElementById('mission-2-button');
     
     if (playerCurrentMission === 1) {
         mission1Button.textContent = "1. The Jump Start (IN PROGRESS)";
@@ -34,9 +34,31 @@ function loadMissions() {
         mission2Button.textContent = "2. The Rookie Contract (COMPLETED)";
     }
 }
+
 // Function called by the main menu's 'MY PLAYER' button
 function loadMyPlayer() {
     showScreen('my-player-screen');
+    
+    // --- PROGRESS BAR AND TEXT LOGIC ---
+    let progressBar = document.getElementById('mission-progress-bar');
+    let currentMissionText = document.querySelector('.my-player-container p strong'); 
+    
+    // Calculate progress (Mission 1 = 0%, Mission 2 = 50%, Mission 3/Done = 100%)
+    let progress = 0;
+    let missionTitle = "The Jump Start"; // Default mission title
+    
+    if (playerCurrentMission === 2) {
+        progress = 50; // After completing mission 1
+        missionTitle = "The Rookie Contract";
+    } else if (playerCurrentMission >= 3) {
+        progress = 100; // After completing mission 2
+        missionTitle = "THE G.O.A.T.!";
+    }
+    
+    // Update the visual bar and the mission title text
+    progressBar.style.width = progress + '%';
+    currentMissionText.nextSibling.textContent = " " + missionTitle;
+    // ----------------------------
 }
 
 // Function called by the 'BACK' button on all sub-screens
