@@ -135,3 +135,30 @@ h1 {
     display: inline-block;
     width: 150px;
 }
+/* Styling for My Player Screen */
+.my-player-container {
+    text-align: left;
+    padding: 30px;
+    background: rgba(10, 10, 40, 0.9); /* A slightly different dark blue background */
+    border: 2px solid #00c4ff; /* Bright blue border */
+    border-radius: 10px;
+    width: 400px; 
+}
+
+.my-player-container h2 {
+    color: #00c4ff;
+    margin-bottom: 25px;
+    text-align: center;
+}
+
+.my-player-container p {
+    font-size: 1.1em;
+    line-height: 1.8;
+}
+
+.my-player-container strong {
+    color: #ff00ff; /* A magenta accent for the labels */
+    font-weight: bold;
+    display: inline-block;
+    width: 150px;
+}
