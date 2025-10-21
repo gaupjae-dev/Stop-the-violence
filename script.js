@@ -4,8 +4,7 @@ function showScreen(screenId) {
     document.getElementById('main-menu-container').style.display = 'none';
     
     // Hide the missions screen
-    document.getElementById('missions-screen').style.display = 'none';
-
+document.getElementById('missions-screen').style.display = 'none'; document.getElementById('my-player-screen').style.display = 'none';
     // Show the requested screen
     document.getElementById(screenId).style.display = 'block';
 }
@@ -31,9 +30,10 @@ function startMission(missionId) {
 
 // Keep these functions for the other original menu buttons
 function loadMyPlayer() {
-    alert("MY PLAYER: Customizing your superstar...");
+ function loadMyPlayer() {
+    showScreen('my-player-screen');
 }
-
+    
 function loadOptions() {
     alert("OPTIONS: Adjusting settings...");
 }
