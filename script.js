@@ -1,11 +1,11 @@
 // Function to handle showing/hiding screens
 function showScreen(screenId) {
-    // Hide the main menu
+    // 1. Hide ALL possible screen containers first
     document.getElementById('main-menu-container').style.display = 'none';
-    
-    // Hide the missions screen
-document.getElementById('missions-screen').style.display = 'none'; document.getElementById('my-player-screen').style.display = 'none';
-    // Show the requested screen
+    document.getElementById('missions-screen').style.display = 'none';
+    document.getElementById('my-player-screen').style.display = 'none'; // NEW: Added My Player screen
+
+    // 2. Show the requested screen
     document.getElementById(screenId).style.display = 'block';
 }
 
@@ -14,12 +14,17 @@ function loadMissions() {
     showScreen('missions-screen');
 }
 
-// Function called by the 'BACK' button on the mission log
+// Function called by the main menu's 'MY PLAYER' button
+function loadMyPlayer() {
+    showScreen('my-player-screen');
+}
+
+// Function called by the 'BACK' button on all sub-screens
 function showMainMenu() {
     showScreen('main-menu-container');
 }
 
-// Logic for clicking a specific mission
+// Logic for clicking a specific mission button
 function startMission(missionId) {
     if (missionId === 1) {
         alert("LAUNCHING MISSION 1: The Jump Start. Let's hoop!");
@@ -29,11 +34,6 @@ function startMission(missionId) {
 }
 
 // Keep these functions for the other original menu buttons
-function loadMyPlayer() {
- function loadMyPlayer() {
-    showScreen('my-player-screen');
-}
-    
 function loadOptions() {
     alert("OPTIONS: Adjusting settings...");
 }
@@ -41,8 +41,3 @@ function loadOptions() {
 function quitGame() {
     alert("QUITTING: Thanks for playing!");
 }
-}
-
-// On first load, ensure the main menu is visible
-// NOTE: We need to change the main menu container in index.html to have an ID
-// Let's assume the class '.main-menu-container' is enough for now, but we should add id="main-menu-container" to the HTML
