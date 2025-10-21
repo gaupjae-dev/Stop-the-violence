@@ -19,8 +19,8 @@ function loadMissions() {
     showScreen('missions-screen');
     
     // 2. Update the mission button text based on player progress
-    let mission1Button = document.getElementById('mission-1-button'); // Uses the new ID!
-    let mission2Button = document.getElementById('mission-2-button'); // Uses the new ID!
+    let mission1Button = document.getElementById('mission-1-button'); // Looks for ID in HTML
+    let mission2Button = document.getElementById('mission-2-button'); // Looks for ID in HTML
     
     if (playerCurrentMission === 1) {
         mission1Button.textContent = "1. The Jump Start (IN PROGRESS)";
