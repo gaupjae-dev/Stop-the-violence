@@ -19,8 +19,8 @@ function loadMissions() {
     showScreen('missions-screen');
     
     // 2. Update the mission button text based on player progress
-    let mission1Button = document.querySelector('[onclick="startMission(1)"]');
-    let mission2Button = document.querySelector('[onclick="startMission(2)"]');
+    let mission1Button = document.getElementById('mission-1-button'); // Uses the new ID!
+    let mission2Button = document.getElementById('mission-2-button'); // Uses the new ID!
     
     if (playerCurrentMission === 1) {
         mission1Button.textContent = "1. The Jump Start (IN PROGRESS)";
@@ -34,7 +34,6 @@ function loadMissions() {
         mission2Button.textContent = "2. The Rookie Contract (COMPLETED)";
     }
 }
-
 // Function called by the main menu's 'MY PLAYER' button
 function loadMyPlayer() {
     showScreen('my-player-screen');
