@@ -3,7 +3,7 @@ function showScreen(screenId) {
     // 1. Hide ALL possible screen containers first
     document.getElementById('main-menu-container').style.display = 'none';
     document.getElementById('missions-screen').style.display = 'none';
-    document.getElementById('my-player-screen').style.display = 'none'; // NEW: Added My Player screen
+document.getElementById('my-player-screen').style.display = 'none'; document.getElementById('options-screen').style.display = 'none';// NEW: Added My Player screen
 
     // 2. Show the requested screen
     document.getElementById(screenId).style.display = 'block';
@@ -35,7 +35,7 @@ function startMission(missionId) {
 
 // Keep these functions for the other original menu buttons
 function loadOptions() {
-    alert("OPTIONS: Adjusting settings...");
+    showScreen('options-screen');
 }
 
 function quitGame() {
