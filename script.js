@@ -16,8 +16,6 @@ function showScreen(screenId) {
 // Function called by the main menu's 'MISSIONS' button
 function loadMissions() {
     // 1. Switch the screen
-    showScreen('missions-screen');
-    
     // 2. Update the mission button text based on player progress
     let mission1Button = document.querySelector('[onclick="startMission(1)"]');
     let mission2Button = document.querySelector('[onclick="startMission(2)"]');
