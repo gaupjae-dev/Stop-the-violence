@@ -1,12 +1,12 @@
-// Function to show a screen by ID
+// Function to handle showing/hiding screens
 function showScreen(screenId) {
-    // 1. Hide the main menu
-    document.querySelector('.main-menu-container').style.display = 'none';
+    // Hide the main menu
+    document.getElementById('main-menu-container').style.display = 'none';
     
-    // 2. Hide the missions screen (in case we're switching screens later)
+    // Hide the missions screen
     document.getElementById('missions-screen').style.display = 'none';
 
-    // 3. Show the requested screen
+    // Show the requested screen
     document.getElementById(screenId).style.display = 'block';
 }
 
@@ -20,16 +20,16 @@ function showMainMenu() {
     showScreen('main-menu-container');
 }
 
-// Function called by mission buttons
+// Logic for clicking a specific mission
 function startMission(missionId) {
     if (missionId === 1) {
-        alert("LAUNCHING MISSION 1: The Jump Start. Get ready!");
+        alert("LAUNCHING MISSION 1: The Jump Start. Let's hoop!");
     } else if (missionId === 2) {
         alert("Mission 2 is LOCKED! Complete Mission 1 first.");
     }
 }
 
-// Keep these functions for the other menu buttons
+// Keep these functions for the other original menu buttons
 function loadMyPlayer() {
     alert("MY PLAYER: Customizing your superstar...");
 }
@@ -40,6 +40,7 @@ function loadOptions() {
 
 function quitGame() {
     alert("QUITTING: Thanks for playing!");
+}
 }
 
 // On first load, ensure the main menu is visible
