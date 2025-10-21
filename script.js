@@ -16,7 +16,7 @@ function loadMissions() {
 
 // Function called by the main menu's 'MY PLAYER' button
 function loadMyPlayer() {
-    showScreen('my-player-screen');
+    showScreen('my-player-screen'); // Must match the HTML ID exactly!
 }
 
 // Function called by the 'BACK' button on all sub-screens
