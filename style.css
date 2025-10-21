@@ -162,3 +162,19 @@ h1 {
     display: inline-block;
     width: 150px;
 }
+/* Styling for Options Screen */
+.options-container {
+    text-align: left;
+    padding: 30px;
+    background: rgba(30, 0, 50, 0.9); /* A dark purple/blue background */
+    border: 2px solid #ff00ff; /* Magenta border */
+    border-radius: 10px;
+    width: 400px;
+    color: #00ffff; /* Cyan text */
+}
+
+.options-container h2 {
+    color: #ff00ff;
+    margin-bottom: 25px;
+    text-align: center;
+}
