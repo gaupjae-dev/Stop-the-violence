@@ -56,7 +56,8 @@
         <p>You can close your browser tab now.</p>
         <button class="menu-button" onclick="showMainMenu()">START NEW GAME</button>
     </div>
-<div class="mission-screen" id="mission-1-screen" style="display: none;">
+
+    <div class="mission-screen" id="mission-1-screen" style="display: none;">
         <h2>THE JUMP START</h2>
         <p>Coach says: Hit the button when the meter reaches 95 for a perfect pass!</p>
         
@@ -69,6 +70,19 @@
 
         <button class="menu-button" onclick="showMainMenu()">EXIT MISSION</button>
     </div>
+
+    <div class="mission-screen" id="mission-2-screen" style="display: none;">
+        <h2>THE ROOKIE CONTRACT</h2>
+        <div class="mission-content">
+            <p id="dialogue-box">Your agent, Mr. Smith, has two contract offers for you. The first offers a small starting bonus with higher performance incentives. The second offers a large starting bonus with lower incentives. He asks: **Which offer do you take?**</p>
+            
+            <button class="skill-button contract-button" onclick="completeMission2(1)">Option 1: Small Bonus, High Incentives</button>
+            <button class="skill-button contract-button" onclick="completeMission2(0)">Option 2: Large Bonus, Low Incentives</button>
+        </div>
+        
+        <button class="menu-button" onclick="showMainMenu()">EXIT MISSION</button>
+    </div>
+
     <script src="script.js"></script> 
 </body>
 </html>
