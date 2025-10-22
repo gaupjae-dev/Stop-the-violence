@@ -69,9 +69,8 @@ function showMainMenu() {
 // Logic for clicking a specific mission button
 function startMission(missionId) {
     if (missionId === 1 && playerCurrentMission === 1) {
-        alert("MISSION SUCCESS! Completing 'The Jump Start'...");
-        playerCurrentMission = 2; // Advance the player to the next mission
-        showMainMenu(); // Go back to the main menu
+        // Instead of an alert, we launch the mini-game screen!
+        launchMission1(); 
     } else if (missionId === 2 && playerCurrentMission === 2) {
         alert("MISSION SUCCESS! You earned your first contract.");
         playerCurrentMission = 3; // Advance the player
@@ -82,7 +81,6 @@ function startMission(missionId) {
         alert("Mission 2 is LOCKED! Complete Mission 1 first.");
     }
 }
-
 // Keep these functions for the other original menu buttons
 function loadOptions() {
     showScreen('options-screen');
@@ -90,4 +88,55 @@ function loadOptions() {
 
 function quitGame() {
     showScreen('quit-screen');
+}
+// Global variables for Mission 1 mini-game
+let meterInterval; // Stores the timer
+let meterValue = 0; // The counting number
+
+// Function to start the Mission 1 mini-game
+function launchMission1() {
+    // 1. Hide the Missions Log and show the Mission 1 screen
+    showScreen('mission-1-screen');
+    
+    // 2. Reset the game
+    meterValue = 0;
+    document.getElementById('meter-display').textContent = meterValue;
+    document.getElementById('mission-feedback').innerHTML = ''; // Clear old feedback
+
+    // 3. Start the meter counting rapidly
+    meterInterval = setInterval(function() {
+        meterValue += 1; // Increment the value
+        if (meterValue > 100) {
+            meterValue = 0; // Wrap back to 0
+        }
+        document.getElementById('meter-display').textContent = meterValue;
+    }, 20); // Changes every 20 milliseconds (very fast!)
+}
+
+// Function to stop the meter and check the score
+function stopMeter() {
+    // 1. Stop the interval timer
+    clearInterval(meterInterval);
+
+    let feedbackDiv = document.getElementById('mission-feedback');
+
+    // 2. Check the score
+    if (meterValue >= 90 && meterValue <= 100) {
+        // SUCCESS: Between 90 and 100 is a "Perfect" or "Great" score
+        feedbackDiv.innerHTML = '<p style="color: #00c4ff; font-weight: bold; font-size: 1.5em;">PERFECT PASS! SCORE: ' + meterValue + '</p>';
+        
+        // 3. Immediately advance the player's progress after success
+        setTimeout(function() {
+            alert("Mission 1 Complete! Returning to Main Menu.");
+            playerCurrentMission = 2; // Advance to the next mission
+            showMainMenu();
+        }, 1500); // Wait 1.5 seconds before returning
+        
+    } else {
+        // FAIL: Score outside the sweet spot
+        feedbackDiv.innerHTML = '<p style="color: #ff00ff; font-weight: bold; font-size: 1.5em;">MISSED IT! SCORE: ' + meterValue + '. Try again.</p>';
+        
+        // 4. Restart the mission after a slight delay
+        setTimeout(launchMission1, 1500);
+    }
 }
