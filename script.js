@@ -145,7 +145,20 @@ function loadOptions() {
 function quitGame() {
     showScreen('quit-screen');
 }
-
+// <<< ADD THIS NEW FUNCTION >>>
+function quickPlay() {
+    if (playerCurrentMission === 1) {
+        // If player is still on Mission 1, launch it directly
+        launchMission1();
+    } else if (playerCurrentMission === 2) {
+        // If player is on Mission 2, launch it directly
+        launchMission2();
+    } else {
+        // If all main missions are complete, launch a practice/endgame activity
+        alert("Career complete! Launching practice drill: The Jump Start.");
+        launchMission1(); 
+    }
+}
 
 // *** MISSION & GAMEPLAY LOGIC ***
 
