@@ -5,8 +5,7 @@ body {
     margin: 0;
     padding: 0;
     display: flex;
-    flex-direction: column; /* ADDED: Ensures main-menu-container fills height correctly */
-    
+    flex-direction: column; 
     min-height: 100vh;
     
     /* BACKGROUND STYLING */
@@ -21,7 +20,6 @@ body {
 }
 
 /* CONTAINER STYLING (Shared appearance for ALL SUB-SCREENS) */
-/* The main menu container is styled separately below to override these defaults */
 .missions-log-container,
 .my-player-container,
 .options-container,
@@ -34,9 +32,9 @@ body {
     width: 450px;
     text-align: center;
     border: 1px solid #00c4ff;
-    min-height: 400px; /* Ensure consistency */
+    min-height: 400px; 
     
-    /* ADDED: Re-center sub-screens using absolute positioning */
+    /* Re-center sub-screens using absolute positioning */
     position: absolute;
     top: 50%;
     left: 50%;
@@ -44,7 +42,7 @@ body {
 }
 
 
-/* !!! NEW LAYOUT FOR MAIN MENU ONLY (Full Screen Grid) !!! */
+/* !!! NEW LAYOUT FOR MAIN MENU ONLY (TITLE TOP, BAR BOTTOM) !!! */
 .main-menu-container {
     width: 100%;
     height: 100vh;
@@ -52,52 +50,52 @@ body {
     padding: 0;
     border: none;
     background: none;
-    
-    /* CSS GRID for positioning the title and menu items */
-    display: grid;
-    grid-template-rows: 1fr auto; /* 1fr for the title area, auto for the menu bar */
-    grid-template-columns: 1fr;
     box-shadow: none;
+
+    /* Use Flexbox to stack content (Title and Menu Bar) vertically */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* Pushes the title to the top and the menu bar to the bottom */
+    align-items: center; /* Centers everything horizontally */
 }
 
-/* --- Positioning the Title (THE G.O.A.T. PROJECT) --- */
-.main-menu-container h1 {
-    /* Use grid area, align it to the bottom-left of its grid cell */
-    align-self: flex-end;
-    justify-self: start;
-    margin-left: 50px; /* Add some space from the left edge */
-    margin-bottom: 50px; /* Add space from the menu bar */
-    
+/* --- Styling for the Title (THE G.O.A.T. PROJECT) --- */
+.main-menu-container .main-title {
     /* Title sizing and style */
-    font-size: 5em; /* INCREASED SIZE for impact */
-    color: #00c4ff; /* Bright Blue/Cyan */
+    font-size: 5em;
+    color: #00c4ff; 
     text-shadow: 0 0 15px rgba(0, 196, 255, 0.8), 0 0 5px rgba(0, 196, 255, 0.5);
     letter-spacing: 2px;
+    margin-top: 50px; /* Offset from the very top */
+    text-align: center; /* Ensures the text is centered within its element */
 }
 
 /* --- Styling for the Menu Buttons Wrapper (The horizontal bar) --- */
 .menu-bar {
-    grid-row: 2; /* Position in the bottom row of the grid */
+    /* The menu bar now fills the bottom width and centers the buttons */
     display: flex; /* Use flexbox to align buttons horizontally */
     justify-content: center; /* Center the entire button group */
     width: 100%;
     padding: 20px 0;
     
-    /* Visual separation from the title area */
+    /* Visual separation from the background */
     background: rgba(10, 10, 30, 0.9);
     border-top: 1px solid #00c4ff;
     box-shadow: 0 0 30px rgba(0, 196, 255, 0.3);
 }
 
 .main-menu-container .menu-button {
-    /* Adjust buttons to be side-by-side rectangles (overrides .menu-button global style) */
-    width: 200px; 
-    text-align: center; 
-    margin: 0 10px; 
+    /* Style for buttons inside the horizontal menu bar */
+    width: 180px; /* Adjust width for 5 buttons to fit well */
+    text-align: center;
+    margin: 0 10px; /* Space between buttons */
+    
+    /* Reverting menu button styles to match the shared style, but ensure they are small enough */
+    padding: 15px 30px;
+    font-size: 1.2em;
 }
 
 /* --- TYPOGRAPHY AND HEADERS (Shared Subscreen Styles) --- */
-/* (This block is now clean and only contains subscreen styles) */
 .missions-log-container h2, 
 .my-player-container h2, 
 .options-container h2 {
@@ -110,7 +108,6 @@ body {
 }
 
 /* --- BUTTON STYLING (Shared Button Styles) --- */
-/* (This block is now clean and only contains subscreen button styles) */
 .menu-button {
     background-color: rgba(30, 30, 70, 0.8); 
     color: #00c4ff;
