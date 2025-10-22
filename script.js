@@ -69,12 +69,11 @@ function showMainMenu() {
 // Logic for clicking a specific mission button
 function startMission(missionId) {
     if (missionId === 1 && playerCurrentMission === 1) {
-        // Instead of an alert, we launch the mini-game screen!
+        // Launches the Mission 1 mini-game
         launchMission1(); 
     } else if (missionId === 2 && playerCurrentMission === 2) {
-        alert("MISSION SUCCESS! You earned your first contract.");
-        playerCurrentMission = 3; // Advance the player
-        showMainMenu();
+        // Launches the Mission 2 dialogue screen
+        launchMission2(); 
     } else if (missionId === 1 && playerCurrentMission > 1) {
         alert("Mission 1 is already complete!");
     } else if (missionId === 2 && playerCurrentMission < 2) {
