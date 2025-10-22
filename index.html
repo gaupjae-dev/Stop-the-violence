@@ -56,7 +56,19 @@
         <p>You can close your browser tab now.</p>
         <button class="menu-button" onclick="showMainMenu()">START NEW GAME</button>
     </div>
+<div class="mission-screen" id="mission-1-screen" style="display: none;">
+        <h2>THE JUMP START</h2>
+        <p>Coach says: Hit the button when the meter reaches 95 for a perfect pass!</p>
+        
+        <div class="mission-content">
+            <h1 id="meter-display">0</h1>
+            <button class="skill-button" onclick="stopMeter()">SHOOT / PASS</button>
+        </div>
 
+        <div id="mission-feedback" style="margin-top: 20px;"></div>
+
+        <button class="menu-button" onclick="showMainMenu()">EXIT MISSION</button>
+    </div>
     <script src="script.js"></script> 
 </body>
 </html>
