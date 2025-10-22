@@ -11,7 +11,7 @@
     <div class="main-menu-container" id="main-menu-container">
         <h1>THE G.O.A.T. PROJECT</h1>
         <button class="menu-button" onclick="loadMissions()">MISSIONS</button>
-        <button class="menu-button" onclick="loadMyPlayer()">MY PLAYER</button>
+        <button class="menu-button" onclick="loadMyHub()">MY HUB</button>
         <button class="menu-button" onclick="loadOptions()">OPTIONS</button>
         <button class="menu-button" onclick="quitGame()">QUIT</button>
     </div>
@@ -25,7 +25,16 @@
         <button class="menu-button" onclick="showMainMenu()">BACK</button>
     </div>
 
-    <div class="my-player-container" id="my-player-screen" style="display: none;">
+   <div class="my-player-container" id="my-hub-screen" style="display: none;">
+        <h2>MY HUB</h2>
+        <p>Welcome to your personal dashboard.</p>
+        
+        <button class="menu-button" onclick="loadMyStats()">VIEW MY STATS</button>
+        <button class="menu-button" onclick="loadTraining()">TRAINING FACILITY</button>
+        <button class="menu-button" onclick="showMainMenu()">BACK</button>
+    </div>
+
+    <div class="my-player-container" id="my-stats-screen" style="display: none;">
         <h2>MY PLAYER STATS</h2>
         <p><strong>Name:</strong> G.O.A.T. Dev</p>
         <p><strong>Overall Rating:</strong> 75</p>
@@ -38,7 +47,7 @@
         </div>
         
         <br>
-        <button class="menu-button" onclick="showMainMenu()">BACK</button>
+        <button class="menu-button" onclick="loadMyHub()">BACK TO HUB</button>
     </div>
 
     <div class="options-container" id="options-screen" style="display: none;">
