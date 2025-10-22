@@ -1,24 +1,31 @@
 let playerCurrentMission = 1; // 1 means 'The Jump Start'
 
-// Function to handle showing/hiding screens
+// *** ALL SCREEN SWITCHING LOGIC ***
 function showScreen(screenId) {
-    // 1. Hide ALL possible screen containers first
+    // 1. Hide ALL possible screen containers first (This list is COMPLETE for all 9 screens!)
     document.getElementById('main-menu-container').style.display = 'none';
     document.getElementById('missions-screen').style.display = 'none';
-    document.getElementById('my-player-screen').style.display = 'none';
+    document.getElementById('my-hub-screen').style.display = 'none';
+    document.getElementById('my-stats-screen').style.display = 'none';
     document.getElementById('options-screen').style.display = 'none';
     document.getElementById('quit-screen').style.display = 'none';
+    document.getElementById('mission-1-screen').style.display = 'none';
+    document.getElementById('mission-2-screen').style.display = 'none';
 
     // 2. Show the requested screen
     document.getElementById(screenId).style.display = 'block';
 }
 
-// Function called by the main menu's 'MISSIONS' button
+function showMainMenu() {
+    showScreen('main-menu-container');
+}
+
+// *** MENU & NAVIGATION FUNCTIONS ***
+
 function loadMissions() {
-    // 1. Switch the screen
     showScreen('missions-screen');
     
-    // 2. Update the mission button text based on player progress
+    // Update the mission button text based on player progress
     let mission1Button = document.getElementById('mission-1-button');
     let mission2Button = document.getElementById('mission-2-button');
     
@@ -29,58 +36,43 @@ function loadMissions() {
         mission1Button.textContent = "1. The Jump Start (COMPLETED)";
         mission2Button.textContent = "2. The Rookie Contract (AVAILABLE)";
     } else {
-        // Assume player has done mission 2 or more
         mission1Button.textContent = "1. The Jump Start (COMPLETED)";
         mission2Button.textContent = "2. The Rookie Contract (COMPLETED)";
     }
 }
 
-// Function called by the main menu's 'MY PLAYER' button
-function loadMyPlayer() {
-    showScreen('my-player-screen');
+function loadMyHub() {
+    showScreen('my-hub-screen');
+}
+
+function loadMyStats() {
+    showScreen('my-stats-screen');
     
     // --- PROGRESS BAR AND TEXT LOGIC ---
     let progressBar = document.getElementById('mission-progress-bar');
-    let currentMissionText = document.querySelector('.my-player-container p strong'); 
+    let currentMissionText = document.querySelector('#my-stats-screen p strong'); 
     
-    // Calculate progress (Mission 1 = 0%, Mission 2 = 50%, Mission 3/Done = 100%)
+    // Calculate progress
     let progress = 0;
-    let missionTitle = "The Jump Start"; // Default mission title
+    let missionTitle = "The Jump Start";
     
     if (playerCurrentMission === 2) {
-        progress = 50; // After completing mission 1
+        progress = 50; 
         missionTitle = "The Rookie Contract";
     } else if (playerCurrentMission >= 3) {
-        progress = 100; // After completing mission 2
+        progress = 100; 
         missionTitle = "THE G.O.A.T.!";
     }
     
-    // Update the visual bar and the mission title text
     progressBar.style.width = progress + '%';
     currentMissionText.nextSibling.textContent = " " + missionTitle;
     // ----------------------------
 }
 
-// Function called by the 'BACK' button on all sub-screens
-function showMainMenu() {
-    showScreen('main-menu-container');
+function loadTraining() {
+    alert("Training Facility Coming Soon!");
 }
 
-// Logic for clicking a specific mission button
-function startMission(missionId) {
-    if (missionId === 1 && playerCurrentMission === 1) {
-        // Launches the Mission 1 mini-game
-        launchMission1(); 
-    } else if (missionId === 2 && playerCurrentMission === 2) {
-        // Launches the Mission 2 dialogue screen
-        launchMission2(); 
-    } else if (missionId === 1 && playerCurrentMission > 1) {
-        alert("Mission 1 is already complete!");
-    } else if (missionId === 2 && playerCurrentMission < 2) {
-        alert("Mission 2 is LOCKED! Complete Mission 1 first.");
-    }
-}
-// Keep these functions for the other original menu buttons
 function loadOptions() {
     showScreen('options-screen');
 }
@@ -88,54 +80,79 @@ function loadOptions() {
 function quitGame() {
     showScreen('quit-screen');
 }
-// Global variables for Mission 1 mini-game
-let meterInterval; // Stores the timer
-let meterValue = 0; // The counting number
 
-// Function to start the Mission 1 mini-game
-function launchMission1() {
-    // 1. Hide the Missions Log and show the Mission 1 screen
-    showScreen('mission-1-screen');
-    
-    // 2. Reset the game
-    meterValue = 0;
-    document.getElementById('meter-display').textContent = meterValue;
-    document.getElementById('mission-feedback').innerHTML = ''; // Clear old feedback
 
-    // 3. Start the meter counting rapidly
-    meterInterval = setInterval(function() {
-        meterValue += 1; // Increment the value
-        if (meterValue > 100) {
-            meterValue = 0; // Wrap back to 0
-        }
-        document.getElementById('meter-display').textContent = meterValue;
-    }, 20); // Changes every 20 milliseconds (very fast!)
+// *** MISSION & GAMEPLAY LOGIC ***
+
+// Mission 1: Global Meter Variables
+let meterInterval; 
+let meterValue = 0; 
+
+function startMission(missionId) {
+    if (missionId === 1 && playerCurrentMission === 1) {
+        launchMission1(); 
+    } else if (missionId === 2 && playerCurrentMission === 2) {
+        launchMission2();
+    } else if (missionId === 1 && playerCurrentMission > 1) {
+        alert("Mission 1 is already complete!");
+    } else if (missionId === 2 && playerCurrentMission < 2) {
+        alert("Mission 2 is LOCKED! Complete Mission 1 first.");
+    }
 }
 
-// Function to stop the meter and check the score
-function stopMeter() {
-    // 1. Stop the interval timer
-    clearInterval(meterInterval);
+// --- Mission 1 Functions ---
+function launchMission1() {
+    showScreen('mission-1-screen');
+    
+    meterValue = 0;
+    document.getElementById('meter-display').textContent = meterValue;
+    document.getElementById('mission-feedback').innerHTML = '';
 
+    meterInterval = setInterval(function() {
+        meterValue += 1;
+        if (meterValue > 100) {
+            meterValue = 0;
+        }
+        document.getElementById('meter-display').textContent = meterValue;
+    }, 20);
+}
+
+function stopMeter() {
+    clearInterval(meterInterval);
     let feedbackDiv = document.getElementById('mission-feedback');
 
-    // 2. Check the score
     if (meterValue >= 90 && meterValue <= 100) {
-        // SUCCESS: Between 90 and 100 is a "Perfect" or "Great" score
         feedbackDiv.innerHTML = '<p style="color: #00c4ff; font-weight: bold; font-size: 1.5em;">PERFECT PASS! SCORE: ' + meterValue + '</p>';
         
-        // 3. Immediately advance the player's progress after success
         setTimeout(function() {
             alert("Mission 1 Complete! Returning to Main Menu.");
-            playerCurrentMission = 2; // Advance to the next mission
+            playerCurrentMission = 2;
             showMainMenu();
-        }, 1500); // Wait 1.5 seconds before returning
+        }, 1500); 
         
     } else {
-        // FAIL: Score outside the sweet spot
         feedbackDiv.innerHTML = '<p style="color: #ff00ff; font-weight: bold; font-size: 1.5em;">MISSED IT! SCORE: ' + meterValue + '. Try again.</p>';
-        
-        // 4. Restart the mission after a slight delay
         setTimeout(launchMission1, 1500);
     }
+}
+
+// --- Mission 2 Functions ---
+function launchMission2() {
+    showScreen('mission-2-screen');
+}
+
+function completeMission2(choiceId) {
+    let message = "";
+
+    if (choiceId === 1) {
+        message = "SMART CHOICE! You bet on your talent. Contract signed! Get ready for training camp.";
+    } else {
+        message = "The safer choice. Contract signed. But remember, the easy road rarely leads to greatness.";
+    }
+
+    alert("CONTRACT SIGNED! " + message);
+    
+    // ADVANCE TO FINAL STAGE
+    playerCurrentMission = 3; 
+    showMainMenu();
 }
