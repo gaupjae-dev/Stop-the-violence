@@ -25,11 +25,12 @@ body {
 .missions-log-container,
 .my-player-container,
 .options-container,
-.quit-container {
-    background: rgba(10, 10, 30, 0.9); /* Dark, slightly transparent container */
+.quit-container,
+.mission-screen {  /* <<< ADDED .mission-screen HERE */
+    background: rgba(10, 10, 30, 0.9);
     padding: 40px;
     border-radius: 10px;
-    box-shadow: 0 0 30px rgba(0, 196, 255, 0.3); /* Soft blue glow */
+    box-shadow: 0 0 30px rgba(0, 196, 255, 0.3);
     width: 450px;
     text-align: center;
     border: 1px solid #00c4ff;
