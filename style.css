@@ -1,7 +1,10 @@
 /* GLOBAL STYLING */
 body {
-    font-family: 'Arial', sans-serif;
+    font-family: 'Exo 2', sans-serif; /* <<< NEW FONT FAMILY APPLIED */
     color: white;
+    margin: 0;
+    /* ... rest of the body styles ... */
+}
     margin: 0;
     padding: 0;
     display: flex;
