@@ -1,22 +1,40 @@
-let playerCurrentMission = 1; // 1 means 'The Jump Start'
+// 🏀 GLOBAL GAME STATE VARIABLES
+let playerCurrentMission = 1; // 1: Jump Start (In Progress), 2: Rookie Contract (In Progress), 3: G.O.A.T. (Complete)
+let playerOverall = 75;      // The player's overall rating
+let missionProgress = 0;     // Progress percentage for the current mission (0 to 100)
 
-// *** ALL SCREEN SWITCHING LOGIC ***
+// *** CORE SCREEN SWITCHING LOGIC ***
+
+// A single function to hide all screens and show the one requested.
 function showScreen(screenId) {
-    // 1. Hide ALL possible screen containers first (This list is COMPLETE for all 9 screens!)
-    document.getElementById('main-menu-container').style.display = 'none';
-    document.getElementById('missions-screen').style.display = 'none';
-    document.getElementById('my-hub-screen').style.display = 'none';
-    document.getElementById('my-stats-screen').style.display = 'none';
-    document.getElementById('options-screen').style.display = 'none';
-    document.getElementById('quit-screen').style.display = 'none';
-    document.getElementById('mission-1-screen').style.display = 'none';
-    document.getElementById('mission-2-screen').style.display = 'none';
+    // 1. Hide ALL possible screen containers (optimized list)
+    const screens = [
+        'main-menu-container', 'missions-screen', 'my-hub-screen',
+        'my-stats-screen', 'options-screen', 'quit-screen',
+        'mission-1-screen', 'mission-2-screen'
+    ];
+
+    screens.forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+            // Use 'flex' for the main-menu-container for centering, 'block' for others
+            element.style.display = 'none';
+        }
+    });
 
     // 2. Show the requested screen
-    document.getElementById(screenId).style.display = 'block';
+    const targetScreen = document.getElementById(screenId);
+    if (targetScreen) {
+        // Use 'flex' only for the main menu, and 'block' for content screens
+        targetScreen.style.display = (screenId === 'main-menu-container') ? 'flex' : 'block';
+    }
 }
 
 function showMainMenu() {
+    // Stop any active mission meter before returning to menu
+    if (meterInterval) {
+        clearInterval(meterInterval);
+    }
     showScreen('main-menu-container');
 }
 
@@ -25,19 +43,23 @@ function showMainMenu() {
 function loadMissions() {
     showScreen('missions-screen');
     
-    // Update the mission button text based on player progress
+    // Update the mission button text and availability
     let mission1Button = document.getElementById('mission-1-button');
     let mission2Button = document.getElementById('mission-2-button');
     
+    // Re-check lock/completion status on load
     if (playerCurrentMission === 1) {
         mission1Button.textContent = "1. The Jump Start (IN PROGRESS)";
         mission2Button.textContent = "2. The Rookie Contract (LOCKED)";
+        mission2Button.onclick = () => alert("Mission 2 is LOCKED! Complete Mission 1 first.");
     } else if (playerCurrentMission === 2) {
         mission1Button.textContent = "1. The Jump Start (COMPLETED)";
         mission2Button.textContent = "2. The Rookie Contract (AVAILABLE)";
-    } else {
+        mission2Button.onclick = () => startMission(2); // Enable button for startMission(2)
+    } else { // playerCurrentMission >= 3
         mission1Button.textContent = "1. The Jump Start (COMPLETED)";
         mission2Button.textContent = "2. The Rookie Contract (COMPLETED)";
+        mission2Button.onclick = () => alert("Mission 2 is already complete!");
     }
 }
 
@@ -48,29 +70,38 @@ function loadMyHub() {
 function loadMyStats() {
     showScreen('my-stats-screen');
     
-    // --- PROGRESS BAR AND TEXT LOGIC ---
-    let progressBar = document.getElementById('mission-progress-bar');
-    let currentMissionText = document.querySelector('#my-stats-screen p strong'); 
+    // --- UPDATE DYNAMIC STATS ---
     
-    // Calculate progress
-    let progress = 0;
-    let missionTitle = "The Jump Start";
-    
-    if (playerCurrentMission === 2) {
-        progress = 50; 
+    // 1. Update Overall Rating
+    document.querySelector('#my-stats-screen p:nth-of-type(2)').innerHTML = '<strong>Overall Rating:</strong> ' + playerOverall;
+
+    // 2. Determine and Update Current Mission Text and Progress
+    let missionTitle;
+    let progress;
+
+    if (playerCurrentMission === 1) {
+        missionTitle = "The Jump Start";
+        progress = missionProgress; // Uses the global progress variable (0-100)
+    } else if (playerCurrentMission === 2) {
         missionTitle = "The Rookie Contract";
-    } else if (playerCurrentMission >= 3) {
-        progress = 100; 
+        progress = 50; // Set a fixed progress for a mid-game state
+    } else {
         missionTitle = "THE G.O.A.T.!";
+        progress = 100;
     }
-    
+
+    // Update the Current Mission display
+    document.querySelector('#my-stats-screen p:nth-of-type(4)').innerHTML = '<strong>Current Mission:</strong> ' + missionTitle;
+
+    // Update Progress Bar
+    let progressBar = document.getElementById('mission-progress-bar');
     progressBar.style.width = progress + '%';
-    currentMissionText.nextSibling.textContent = " " + missionTitle;
     // ----------------------------
 }
 
 function loadTraining() {
     alert("Training Facility Coming Soon!");
+    loadMyHub(); // Return to the Hub after the alert
 }
 
 function loadOptions() {
@@ -85,18 +116,20 @@ function quitGame() {
 // *** MISSION & GAMEPLAY LOGIC ***
 
 // Mission 1: Global Meter Variables
-let meterInterval; 
-let meterValue = 0; 
+let meterInterval;
+let meterValue = 0;
 
 function startMission(missionId) {
     if (missionId === 1 && playerCurrentMission === 1) {
-        launchMission1(); 
+        launchMission1();
     } else if (missionId === 2 && playerCurrentMission === 2) {
         launchMission2();
     } else if (missionId === 1 && playerCurrentMission > 1) {
         alert("Mission 1 is already complete!");
+        loadMissions();
     } else if (missionId === 2 && playerCurrentMission < 2) {
         alert("Mission 2 is LOCKED! Complete Mission 1 first.");
+        loadMissions();
     }
 }
 
@@ -108,6 +141,7 @@ function launchMission1() {
     document.getElementById('meter-display').textContent = meterValue;
     document.getElementById('mission-feedback').innerHTML = '';
 
+    // The meter loop logic
     meterInterval = setInterval(function() {
         meterValue += 1;
         if (meterValue > 100) {
@@ -124,15 +158,21 @@ function stopMeter() {
     if (meterValue >= 90 && meterValue <= 100) {
         feedbackDiv.innerHTML = '<p style="color: #00c4ff; font-weight: bold; font-size: 1.5em;">PERFECT PASS! SCORE: ' + meterValue + '</p>';
         
+        // Reward: Advance player state and update stats
+        playerOverall += 1;
+        missionProgress = 100; // Mark mission progress as 100%
+        
         setTimeout(function() {
-            alert("Mission 1 Complete! Returning to Main Menu.");
-            playerCurrentMission = 2;
+            alert("Mission 1 Complete! Overall Rating +1. Returning to Main Menu.");
+            playerCurrentMission = 2; // Unlock Mission 2
             showMainMenu();
-        }, 1500); 
+        }, 1500);
         
     } else {
-        feedbackDiv.innerHTML = '<p style="color: #ff00ff; font-weight: bold; font-size: 1.5em;">MISSED IT! SCORE: ' + meterValue + '. Try again.</p>';
-        setTimeout(launchMission1, 1500);
+        feedbackDiv.innerHTML = '<p style="color: #ff00ff; font-weight: bold; font-size: 1.5em;">MISSED IT! SCORE: ' + meterValue + '. Trying again...</p>';
+        // Reset the progress for the failed attempt
+        missionProgress = meterValue; 
+        setTimeout(launchMission1, 1500); // Relaunch the mission after a delay
     }
 }
 
@@ -143,16 +183,25 @@ function launchMission2() {
 
 function completeMission2(choiceId) {
     let message = "";
-
+    
+    // Apply different rewards based on the contract choice
     if (choiceId === 1) {
-        message = "SMART CHOICE! You bet on your talent. Contract signed! Get ready for training camp.";
+        // High Incentives choice (The risk/reward option)
+        playerOverall += 5; 
+        message = "SMART CHOICE! You bet on your talent. Contract signed! Your potential has increased (Overall +5).";
     } else {
-        message = "The safer choice. Contract signed. But remember, the easy road rarely leads to greatness.";
+        // Large Bonus choice (The safe option)
+        playerOverall += 1;
+        message = "The safer choice. Contract signed. You secured the bag, but the easy road rarely leads to greatness (Overall +1).";
     }
 
     alert("CONTRACT SIGNED! " + message);
     
     // ADVANCE TO FINAL STAGE
-    playerCurrentMission = 3; 
+    playerCurrentMission = 3; // Game is functionally complete/at the last stage
     showMainMenu();
 }
+
+// --- INITIALIZER ---
+// Ensure the main menu shows up when the page is fully loaded
+document.addEventListener('DOMContentLoaded', showMainMenu);
