@@ -1,13 +1,47 @@
 // 🏀 GLOBAL GAME STATE VARIABLES
 let playerCurrentMission = 1; // 1: Jump Start (In Progress), 2: Rookie Contract (In Progress), 3: G.O.A.T. (Complete)
-let playerOverall = 75;      // The player's overall rating
-let missionProgress = 0;     // Progress percentage for the current mission (0 to 100)
+let playerOverall = 75;      // The player's overall rating
+let missionProgress = 0;     // Progress percentage for the current mission (0 to 100)
+
+// Mission 1: Global Meter Variables
+let meterInterval;
+let meterValue = 0;
+
+// *** SAVE/LOAD GAME STATE LOGIC ***
+
+function saveGame() {
+    const gameState = {
+        mission: playerCurrentMission,
+        overall: playerOverall,
+        progress: missionProgress 
+    };
+    // Save the entire game state object as a JSON string
+    localStorage.setItem('goatProjectSave', JSON.stringify(gameState));
+    console.log("Game Saved!");
+}
+
+function loadGame() {
+    const savedState = localStorage.getItem('goatProjectSave');
+
+    if (savedState) {
+        const gameState = JSON.parse(savedState);
+        
+        // Restore global variables from the saved state
+        playerCurrentMission = gameState.mission;
+        playerOverall = gameState.overall;
+        missionProgress = gameState.progress;
+        
+        console.log(`Game Loaded! Current Mission: ${playerCurrentMission}, Overall: ${playerOverall}`);
+    } else {
+        console.log("No saved game found. Starting new game.");
+    }
+}
 
 // *** CORE SCREEN SWITCHING LOGIC ***
 
 // A single function to hide all screens and show the one requested.
 function showScreen(screenId) {
-    // 1. Hide ALL possible screen containers (optimized list)
+    // 1. Hide ALL possible screen containers
     const screens = [
         'main-menu-container', 'missions-screen', 'my-hub-screen',
         'my-stats-screen', 'options-screen', 'quit-screen',
@@ -17,7 +51,7 @@ function showScreen(screenId) {
     screens.forEach(id => {
         const element = document.getElementById(id);
         if (element) {
-            // Use 'flex' for the main-menu-container for centering, 'block' for others
+            // Hide all elements
             element.style.display = 'none';
         }
     });
@@ -25,7 +59,7 @@ function showScreen(screenId) {
     // 2. Show the requested screen
     const targetScreen = document.getElementById(screenId);
     if (targetScreen) {
-        // Use 'flex' only for the main menu, and 'block' for content screens
+        // Use 'flex' for the main menu, 'block' for content screens, to handle their respective CSS layouts
         targetScreen.style.display = (screenId === 'main-menu-container') ? 'flex' : 'block';
     }
 }
@@ -115,10 +149,6 @@ function quitGame() {
 
 // *** MISSION & GAMEPLAY LOGIC ***
 
-// Mission 1: Global Meter Variables
-let meterInterval;
-let meterValue = 0;
-
 function startMission(missionId) {
     if (missionId === 1 && playerCurrentMission === 1) {
         launchMission1();
@@ -165,6 +195,7 @@ function stopMeter() {
         setTimeout(function() {
             alert("Mission 1 Complete! Overall Rating +1. Returning to Main Menu.");
             playerCurrentMission = 2; // Unlock Mission 2
+            saveGame();              // <<< SAVE GAME AFTER COMPLETION
             showMainMenu();
         }, 1500);
         
@@ -199,9 +230,13 @@ function completeMission2(choiceId) {
     
     // ADVANCE TO FINAL STAGE
     playerCurrentMission = 3; // Game is functionally complete/at the last stage
+    saveGame();              // <<< SAVE GAME AFTER COMPLETION
     showMainMenu();
 }
 
 // --- INITIALIZER ---
-// Ensure the main menu shows up when the page is fully loaded
-document.addEventListener('DOMContentLoaded', showMainMenu);
+// Loads saved game data and shows the main menu when the page is ready
+document.addEventListener('DOMContentLoaded', () => {
+    loadGame();   // <<< 1. Load any saved data first
+    showMainMenu(); // 2. Then, display the main menu
+});
