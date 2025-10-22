@@ -1,27 +1,19 @@
 /* GLOBAL STYLING */
 body {
-    font-family: 'Exo 2', sans-serif; /* <<< NEW FONT FAMILY APPLIED */
+    font-family: 'Exo 2', sans-serif;
     color: white;
-    margin: 0;
-    /* ... rest of the body styles ... */
-}
     margin: 0;
     padding: 0;
     display: flex;
     flex-direction: column; 
     min-height: 100vh;
     
-    /* BACKGROUND STYLING */
-    background: #000; /* Fallback color */
-    background-image: url('background.jpg'); 
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
+    /* GUARANTEED BLACK BACKGROUND */
+    background-color: #000; 
     
-    /* Dark overlay for contrast */
-    box-shadow: inset 0 0 0 1000px rgba(0, 0, 0, 0.65);
+    /* Set the background image to none to prevent any caching issues */
+    background-image: none; 
 }
-
 /* CONTAINER STYLING (Shared appearance for ALL SUB-SCREENS) */
 .missions-log-container,
 .my-player-container,
