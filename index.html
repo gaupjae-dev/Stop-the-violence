@@ -344,18 +344,26 @@
     </style>
 </head>
 <body>
-    <div class="main-menu-container" id="main-menu-container">
+<div class="main-menu-container" id="main-menu-container">
+    
+    <div class="main-menu-top">
+        
         <h1 class="main-title">THE G.O.A.T. PROJECT</h1>
         
-        <div id="user-info" class="absolute top-2 right-4 text-xs sm:text-sm text-neon-blue text-center"></div>
-
-        <div class="menu-bar">
+        <div class="main-modes-wrapper">
             <button class="menu-button" onclick="quickPlay()">QUICK PLAY (3D)</button>
             <button class="menu-button" onclick="loadMissions()">MISSIONS</button>
             <button class="menu-button" onclick="loadMyHub()">MY HUB</button>
-            <button class="menu-button" onclick="loadOptions()">OPTIONS</button>
-            <button class="menu-button" onclick="quitGame()">QUIT</button>
         </div>
+    </div>
+
+    <div id="user-info" class="absolute top-2 right-4 text-xs sm:text-sm text-neon-blue text-center hidden"></div>
+
+    <div class="main-menu-bottom">
+        <button class="menu-button" onclick="loadOptions()">OPTIONS</button>
+        <button class="menu-button" onclick="quitGame()">QUIT</button>
+    </div>
+    
     </div>
 
     <div id="quick-play-game-screen" class="hidden">
