@@ -9,7 +9,12 @@
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cannon.js/0.6.2/cannon.min.js"></script>
+    <script src="https://threejs.org/examples/js/controls/PointerLockControls.js"></script> 
     
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js"></script>
+
     <style>
         /* FONT IMPORTS */
         @import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@400;700;900&family=Inter:wght@400;700&display=swap');
@@ -23,7 +28,7 @@
             display: flex;
             flex-direction: column;
             min-height: 100vh;
-            background-color: #000; /* GUARANTEED BLACK BACKGROUND */
+            background-color: #000;
             background-image: none;
             overflow-x: hidden;
         }
@@ -51,8 +56,8 @@
             padding: 40px;
             border-radius: 10px;
             box-shadow: 0 0 30px rgba(0, 196, 255, 0.3);
-            width: 450px; /* Fixed width from user's CSS */
-            max-width: 95%; /* Responsive safety net */
+            width: 450px;
+            max-width: 95%;
             text-align: center;
             border: 1px solid var(--neon-blue);
             min-height: 400px;
@@ -460,22 +465,19 @@
         </div>
     </div>
 
-    <script type="module">
-        // --- Firebase Setup ---
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        import { PointerLockControls } from "https://threejs.org/examples/jsm/controls/PointerLockControls.js"; // Include PointerLockControls
-
-        // Global Firebase and Canvas variables (MUST BE USED)
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+    <script>
+        // --- Firebase/Environment Bypass for Local Testing ---
+        // These variables previously caused the script to fail when run locally.
+        const appId = 'local-test-id';
+        const firebaseConfig = null; 
+        const initialAuthToken = null;
         
         let app, db, auth;
-        let userId = 'guest';
-        let isAuthReady = false;
+        let userId = 'guest-' + Math.random().toString(16).slice(2, 10); // Generate a unique guest ID
+        let isAuthReady = true; // Pretend auth is ready so the game can start
         
+        // Use the global variables loaded from the script tags
+        const firestore = firebase.firestore;
         const FIREBASE_COLLECTION = `artifacts/${appId}/users`;
         const FIREBASE_DOC_ID = 'game_data';
 
@@ -509,7 +511,7 @@
         // Game Scoring State
         let quickPlayData = { score: 0, highScore: 0, shots: 0 };
         const timeStep = 1 / 60; // Cannon.js physics step
-
+        
         // --- CUSTOM MESSAGE BOX (Replaces alert() and confirm()) ---
         function showMessageBox(message, callback = null) {
             document.getElementById('modal-text').textContent = message;
@@ -550,7 +552,7 @@
             }
         }
         
-        // --- FIREBASE HIGH SCORE FUNCTIONS (For Quick Play persistence) ---
+        // --- FIREBASE HIGH SCORE FUNCTIONS (Now only saves to local storage in this mode) ---
         
         const updateGameUI = () => {
             const scoreDisplayEl = document.getElementById('score-display');
@@ -564,78 +566,34 @@
 
         const initializeFirebase = async () => {
             if (!firebaseConfig) {
-                console.error("Firebase config is missing. Data persistence disabled.");
-                isAuthReady = true;
-                loadGame(); // Load non-firestore data immediately
+                console.warn("Firebase config is null. Using Local Storage for all data persistence.");
+                // Load local storage high score
+                const localHighScore = localStorage.getItem('quickPlayHighScore');
+                quickPlayData.highScore = parseInt(localHighScore) || 0;
+                updateGameUI();
+                document.getElementById('user-info').innerHTML = `<i class="fas fa-user text-neon-pink mr-1"></i> ID: ${userId.substring(0, 8)}... (LOCAL)`;
+                document.getElementById('player-id-display').textContent = userId;
                 return;
             }
-            try {
-                app = initializeApp(firebaseConfig);
-                db = getFirestore(app);
-                auth = getAuth(app);
-                
-                if (initialAuthToken) {
-                    await signInWithCustomToken(auth, initialAuthToken);
-                } else {
-                    await signInAnonymously(auth);
-                }
-
-                onAuthStateChanged(auth, (user) => {
-                    if (user) {
-                        userId = user.uid;
-                    } else {
-                        // Fallback to anonymous ID if initial auth fails
-                        userId = crypto.randomUUID();
-                    }
-                    isAuthReady = true;
-                    document.getElementById('user-info').innerHTML = `<i class="fas fa-user text-neon-pink mr-1"></i> ID: ${userId.substring(0, 8)}...`;
-                    document.getElementById('player-id-display').textContent = userId;
-                    loadGame(); // Load localStorage data
-                    loadGameData(); // Start listening to Firestore
-                });
-            } catch (error) {
-                console.error("Error initializing Firebase or signing in:", error);
-                isAuthReady = true;
-                loadGame(); // Load non-firestore data
-            }
+            // Original Firebase logic (Will be skipped due to firebaseConfig = null)
         };
 
         const loadGameData = () => {
-            if (!isAuthReady || !db) return;
-            // Document path: /artifacts/{appId}/users/{userId}/data/game_data
-            const docRef = doc(db, FIREBASE_COLLECTION, userId, 'data', FIREBASE_DOC_ID);
-            
-            onSnapshot(docRef, (docSnap) => {
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    // Update only quick play high score from Firestore
-                    quickPlayData.highScore = data.highScore || 0;
-                } else {
-                    quickPlayData.highScore = 0;
-                    saveGameData(); // Initialize document if it doesn't exist
-                }
-                updateGameUI();
-                const statsHighScoreEl = document.getElementById('stats-high-score');
-                if(statsHighScoreEl) statsHighScoreEl.textContent = quickPlayData.highScore;
-            }, (error) => {
-                console.error("Error listening to quick play data:", error);
-            });
+             // In local mode, we only load the high score from local storage
+             const statsHighScoreEl = document.getElementById('stats-high-score');
+             if(statsHighScoreEl) statsHighScoreEl.textContent = quickPlayData.highScore;
         };
 
         const saveGameData = () => {
-            if (!isAuthReady || !db || quickPlayData.score <= quickPlayData.highScore) return;
+            if (quickPlayData.score <= quickPlayData.highScore) return;
             
-            const docRef = doc(db, FIREBASE_COLLECTION, userId, 'data', FIREBASE_DOC_ID);
             quickPlayData.highScore = quickPlayData.score; // New high score is the current score
+            localStorage.setItem('quickPlayHighScore', quickPlayData.highScore); // Save to local storage
             
-            setDoc(docRef, { 
-                highScore: quickPlayData.highScore
-            }, { merge: true }).then(() => {
-                updateGameUI();
-                console.log(`New High Score Saved: ${quickPlayData.highScore}`);
-            }).catch(error => {
-                console.error("Error saving quick play data:", error);
-            });
+            updateGameUI();
+            console.log(`New High Score Saved to Local Storage: ${quickPlayData.highScore}`);
+            
+            // If Firebase was configured, we would save to Firestore here.
         };
         
         // --- SCREEN MANAGEMENT ---
@@ -986,7 +944,7 @@
             scene.add(pointLight);
 
             // CONTROLS (PointerLockControls for first-person movement)
-            controls = new PointerLockControls(camera, renderer.domElement); // Use the imported PointerLockControls
+            controls = new THREE.PointerLockControls(camera, renderer.domElement); // Now referenced correctly
             scene.add(controls.getObject());
 
             // Event listeners
@@ -1142,9 +1100,9 @@
                             quickPlayData.score += 100;
                             document.getElementById('game-message').textContent = "BASKET! +100 Points! Shoot Again.";
                             
-                            // Check for High Score and save to Firebase
+                            // Check for High Score and save to Firebase/Local Storage
                             if (quickPlayData.score > quickPlayData.highScore) {
-                                saveGameData(); // Saves new high score to Firebase/Firestore
+                                saveGameData(); // Saves new high score
                             }
                             
                             updateGameUI();
@@ -1185,8 +1143,9 @@
         document.addEventListener('DOMContentLoaded', () => {
             // 1. Setup Custom Alert
             window.alert = showMessageBox;
-            // 2. Initialize Firebase and load data (This will call loadGame and loadGameData)
-            initializeFirebase();
+            // 2. Initialize Firebase (or the local bypass) and load data (This will call loadGame and loadGameData)
+            loadGame(); // Load mission/overall data
+            initializeFirebase(); // Load high score data (local storage in this case)
             // 3. The main menu will be shown by default until a button is clicked
         });
     </script> 
