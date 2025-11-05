@@ -38,7 +38,7 @@ body {
     border-radius: 10px;
     box-shadow: 0 0 30px rgba(0, 196, 255, 0.3);
     width: 450px;
-    max-width: 95%; /* Added max-width for better sub-screen responsiveness */
+    max-width: 95%; 
     text-align: center;
     border: 1px solid var(--neon-blue);
     min-height: 400px; 
@@ -56,17 +56,17 @@ body {
 */
 .main-menu-container {
     width: 100%;
-    height: 100vh;
+    height: 100vh; /* CRITICAL: Ensures the container takes full viewport height */
     max-width: none;
-    padding: 40px; /* Add padding for elements to sit away from edges */
+    padding: 40px; 
     border: none;
     background: none;
     box-shadow: none;
     
     /* Use Flexbox to manage the entire screen layout */
     display: flex;
-    flex-direction: column; /* Main container is columnar */
-    justify-content: space-between; /* Pushes content to top and bottom */
+    flex-direction: column; 
+    justify-content: space-between; /* CRITICAL: Pushes the top and bottom sections apart */
     align-items: flex-start; /* Default alignment (left side) */
 }
 
@@ -87,7 +87,7 @@ body {
     text-shadow: 0 0 15px rgba(0, 196, 255, 0.8), 0 0 5px rgba(0, 196, 255, 0.5);
     letter-spacing: 2px;
     margin: 0;
-    text-align: left; /* Aligned to the left corner */
+    text-align: left; 
 }
 
 /* --- Styling for the Main Menu Items (Top Right Stack) --- */
@@ -96,14 +96,14 @@ body {
     flex-direction: column; /* Stack buttons vertically */
     align-items: flex-end; /* Align buttons to the right */
     gap: 15px;
-    margin-top: 20px; /* Slight offset from the very top edge */
+    margin-top: 20px; 
 }
 
 /* --- Styling for the Utility Menu Items (Bottom Left Stack) --- */
 .main-menu-bottom {
     display: flex;
-    flex-direction: column; /* Stack utility buttons vertically */
-    align-items: flex-start; /* Align buttons to the left */
+    flex-direction: column; 
+    align-items: flex-start; 
     gap: 10px;
 }
 
@@ -113,7 +113,7 @@ body {
     font-size: 1.4em;
     text-align: right; 
     padding: 15px 30px;
-    margin: 0; /* Remove default margin */
+    margin: 0; 
 }
 
 /* Make utility buttons smaller and left-aligned */
@@ -122,7 +122,7 @@ body {
     font-size: 1em;
     text-align: left;
     padding: 10px 15px;
-    margin: 0; /* Remove default margin */
+    margin: 0; 
 }
 
 /* Responsive adjustment for small screens (Mobile View) */
@@ -131,17 +131,17 @@ body {
         padding: 20px;
     }
     .main-menu-top {
-        flex-direction: column; /* Stack title and modes vertically */
+        flex-direction: column; 
         gap: 20px;
     }
     .main-menu-container .main-title {
         text-align: center;
         width: 100%;
-        font-size: 3.5em; /* Smaller title on mobile */
+        font-size: 3.5em; 
     }
     .main-modes-wrapper {
         width: 100%;
-        align-items: center; /* Center the buttons on mobile */
+        align-items: center; 
         gap: 10px;
     }
     .main-modes-wrapper .menu-button {
@@ -151,7 +151,7 @@ body {
     }
     .main-menu-bottom {
         width: 100%;
-        align-items: center; /* Center utility buttons on mobile */
+        align-items: center; 
         gap: 10px;
     }
     .main-menu-bottom .menu-button {
@@ -176,7 +176,7 @@ body {
 }
 
 /* --- BUTTON STYLING (Shared Button Styles) --- */
-.menu-button, .skill-button, .contract-button { /* Added skill/contract buttons here */
+.menu-button, .skill-button, .contract-button { 
     background-color: rgba(30, 30, 70, 0.8); 
     color: var(--neon-blue);
     border: 1px solid var(--neon-blue); 
@@ -192,7 +192,7 @@ body {
 
 .menu-button:hover, .skill-button:hover, .contract-button:hover {
     background-color: var(--neon-blue); 
-    color: var(--dark-bg); /* Use dark-bg for text on hover */
+    color: var(--dark-bg); 
     box-shadow: 0 0 20px rgba(0, 196, 255, 0.5);
 }
 
@@ -263,7 +263,7 @@ body {
     margin-bottom: 30px;
 }
 
-/* MISSION 1: SHOOT / PASS Button (Adjusted to use skill-button selector) */
+/* MISSION 1: SHOOT / PASS Button */
 .skill-button {
     background-color: var(--neon-pink);
     color: var(--dark-bg);
@@ -276,7 +276,6 @@ body {
     border-radius: 5px;
     transition: all 0.2s ease;
     text-transform: uppercase;
-    /* Overrides the default menu-button style for a more distinct primary action */
     width: auto; 
     border: 1px solid var(--neon-pink);
 }
