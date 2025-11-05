@@ -1,811 +1,205 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>THE G.O.A.T. PROJECT</title>
-    <!-- Load Tailwind CSS for utility classes (used sparingly for simple layouts) -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Load Font Awesome for icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    
-    <!-- === 3D GAME DEPENDENCIES === -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/cannon.js/0.6.2/cannon.min.js"></script>
-    
-    <style>
-        /* FONT IMPORTS */
-        @import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@400;700;900&family=Inter:wght@400;700&display=swap');
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>THE G.O.A.T. PROJECT - DIAGNOSTIC</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <style>
+        /* FONT IMPORTS */
+        @import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@400;700;900&family=Inter:wght@400;700&display=swap');
 
-        /* GLOBAL STYLING */
-        body {
-            font-family: 'Exo 2', sans-serif;
-            color: white;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-            background-color: #000; /* GUARANTEED BLACK BACKGROUND */
-            background-image: none;
-            overflow-x: hidden;
-        }
-        
-        /* HIDDEN UTILITY CLASS */
-        .hidden { display: none !important; }
+        /* GLOBAL STYLING */
+        body {
+            font-family: 'Exo 2', sans-serif;
+            color: white;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            background-color: #000;
+            overflow-x: hidden;
+        }
+        
+        /* HIDDEN UTILITY CLASS */
+        .hidden { display: none !important; }
 
-        /* NEON COLOR VARIABLES */
-        :root {
-            --neon-blue: #00c4ff;
-            --neon-pink: #ff00ff;
-            --dark-bg: #1a1a2e;
-            --mid-bg: #2c2c44;
-            --text-color: #f0f0f0;
-            --court-color: #0d0d1a;
-        }
+        /* NEON COLOR VARIABLES */
+        :root {
+            --neon-blue: #00c4ff;
+            --neon-pink: #ff00ff;
+            --dark-bg: #1a1a2e;
+            --mid-bg: #2c2c44;
+        }
 
-        /* CONTAINER STYLING (Shared appearance for ALL SUB-SCREENS) */
-        .missions-log-container,
-        .my-player-container,
-        .options-container,
-        .quit-container,
-        .mission-screen {
-            background: rgba(10, 10, 30, 0.9);
-            padding: 40px;
-            border-radius: 10px;
-            box-shadow: 0 0 30px rgba(0, 196, 255, 0.3);
-            width: 450px; /* Fixed width from user's CSS */
-            max-width: 95%; /* Responsive safety net */
-            text-align: center;
-            border: 1px solid var(--neon-blue);
-            min-height: 400px;
-            
-            /* Re-center sub-screens using absolute positioning */
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 10;
-        }
+        /* CONTAINER STYLING */
+        .missions-log-container, .my-player-container, .options-container, .quit-container {
+            background: rgba(10, 10, 30, 0.9);
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 0 30px rgba(0, 196, 255, 0.3);
+            width: 450px;
+            max-width: 95%;
+            text-align: center;
+            border: 1px solid var(--neon-blue);
+            min-height: 400px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+        }
 
+        .main-menu-container {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+        }
 
-        /* !!! NEW LAYOUT FOR MAIN MENU ONLY (TITLE TOP, BAR BOTTOM) !!! */
-        .main-menu-container {
-            width: 100%;
-            height: 100vh;
-            max-width: none;
-            padding: 0;
-            border: none;
-            background: none;
-            box-shadow: none;
+        .main-menu-container .main-title {
+            font-family: 'Exo 2', sans-serif;
+            font-weight: 900;
+            font-size: 5em;
+            color: var(--neon-blue);
+            text-shadow: 0 0 15px rgba(0, 196, 255, 0.8), 0 0 5px rgba(0, 196, 255, 0.5);
+            margin-top: 50px;
+        }
 
-            /* Use Flexbox to stack content (Title and Menu Bar) vertically */
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between; /* Pushes the title to the top and the menu bar to the bottom */
-            align-items: center; /* Centers everything horizontally */
-        }
+        .menu-bar {
+            display: flex;
+            justify-content: center;
+            width: 100%;
+            padding: 20px 0;
+            gap: 10px;
+            background: rgba(10, 10, 30, 0.9);
+            border-top: 1px solid var(--neon-blue);
+            box-shadow: 0 0 30px rgba(0, 196, 255, 0.3);
+        }
 
-        /* --- Styling for the Title (THE G.O.A.T. PROJECT) --- */
-        .main-menu-container .main-title {
-            font-family: 'Exo 2', sans-serif;
-            font-weight: 900;
-            font-size: 5em;
-            color: var(--neon-blue);
-            text-shadow: 0 0 15px rgba(0, 196, 255, 0.8), 0 0 5px rgba(0, 196, 255, 0.5);
-            letter-spacing: 2px;
-            margin-top: 50px;
-            text-align: center;
-        }
-
-        /* Responsive title size */
-        @media (max-width: 640px) {
-            .main-menu-container .main-title {
-                font-size: 2.5em;
-                margin-top: 20vh; /* Push title down slightly on small screens */
-            }
-        }
-
-        /* --- Styling for the Menu Buttons Wrapper (The horizontal bar) --- */
-        .menu-bar {
-            display: flex;
-            justify-content: center;
-            width: 100%;
-            padding: 20px 0;
-            gap: 10px; /* Use gap for better spacing control */
-            
-            /* Visual separation from the background */
-            background: rgba(10, 10, 30, 0.9);
-            border-top: 1px solid var(--neon-blue);
-            box-shadow: 0 0 30px rgba(0, 196, 255, 0.3);
-        }
-
-        /* Ensures horizontal menu bar wraps on smaller screens */
-        @media (max-width: 768px) {
-            .menu-bar {
-                flex-wrap: wrap;
-                padding: 10px 5px;
-            }
-            .main-menu-container .menu-button {
-                width: 45%;
-                margin: 5px;
-            }
-        }
-
-        .main-menu-container .menu-button {
-            width: 180px;
-            text-align: center;
-            
-            /* Overriding default menu-button style for the main menu bar */
-            padding: 15px 30px;
-            font-size: 1.2em;
-        }
-
-        /* --- TYPOGRAPHY AND HEADERS (Shared Subscreen Styles) --- */
-        .missions-log-container h2,
-        .my-player-container h2,
-        .options-container h2,
-        .quit-container h2,
-        .mission-screen h2,
-        #quick-play-game-screen h2 {
-            font-family: 'Exo 2', sans-serif;
-            font-size: 2em;
-            border-bottom: 2px solid var(--neon-pink);
-            padding-bottom: 10px;
-            margin-bottom: 30px;
-            letter-spacing: 1px;
-            color: var(--neon-pink);
-            text-shadow: 0 0 5px rgba(255, 0, 255, 0.5);
-        }
-
-        /* --- BUTTON STYLING (Shared Button Styles) --- */
-        .menu-button, .neon-btn {
-            background-color: rgba(30, 30, 70, 0.8);
-            color: var(--neon-blue);
-            border: 1px solid var(--neon-blue);
-            padding: 15px 30px;
-            margin: 10px 0;
-            cursor: pointer;
-            font-size: 1.2em;
-            border-radius: 5px;
-            transition: all 0.2s ease;
-            width: 100%;
-            text-align: left; /* Default alignment for full-width buttons */
-            font-weight: bold;
-        }
-
-        .menu-button:hover, .neon-btn:hover {
-            background-color: var(--neon-blue);
-            color: var(--dark-bg);
-            box-shadow: 0 0 20px rgba(0, 196, 255, 0.5);
-        }
-
-        /* Mission Item Button Style - kept as provided */
-        .mission-item {
-            background-color: rgba(30, 30, 70, 0.8);
-            color: white;
-            border: 1px solid var(--neon-pink);
-            padding: 12px 20px;
-            margin: 8px 0;
-            cursor: pointer;
-            font-size: 1em;
-            border-radius: 5px;
-            transition: all 0.2s ease;
-            width: 100%;
-            text-align: left;
-        }
-
-        .mission-item:hover:not([disabled]) {
-            background-color: rgba(255, 0, 255, 0.2);
-            box-shadow: 0 0 15px rgba(255, 0, 255, 0.6);
-        }
-        
-        .mission-item[disabled] {
-            opacity: 0.5;
-            cursor: not-allowed;
-            border-color: #555;
-            color: #aaa;
-        }
-
-        /* PLAYER STATS & PROGRESS BAR - kept as provided */
-        .my-player-container p {
-            text-align: left;
-            margin: 10px 0;
-            font-size: 1.1em;
-        }
-
-        /* Styling for the Mission Progress Bar - kept as provided */
-        .progress-bar-container {
-            width: 100%;
-            height: 15px;
-            background-color: #222;
-            border: 1px solid var(--neon-blue);
-            border-radius: 5px;
-            margin: 20px 0;
-            overflow: hidden;
-        }
-
-        #mission-progress-bar { /* The filling bar element */
-            height: 100%;
-            width: 0%;
-            background-color: var(--neon-pink);
-            transition: width 0.5s ease-in-out;
-        }
-        
-        /* Mission Gameplay Styling - kept as provided */
-
-        /* Canvas Styling */
-        #game-canvas {
-            display: block;
-            width: 100%;
-            height: 100%;
-            border: none; /* Let the canvas handle its own border/shadow in 3D */
-            background-color: var(--court-color);
-            touch-action: none;
-            cursor: crosshair; /* Indicate a 3D environment/shooter mode */
-        }
-        
-        /* Quick Play Game Screen Specific Layout (Responsive for 3D) */
-        #quick-play-game-screen {
-            background: none; /* Black background from body */
-            padding: 0;
-            width: 100%;
-            max-width: 100%;
-            min-height: 100vh;
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: 1; /* Below the modals */
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        /* Game UI Overlay */
-        .game-ui-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none; /* Allows clicks/interactions to pass through to the canvas */
-            z-index: 2;
-        }
-
-        .control-bar {
-            background: rgba(10, 10, 30, 0.7);
-            border: 1px solid var(--neon-blue);
-            box-shadow: 0 0 15px rgba(0, 196, 255, 0.5);
-            padding: 10px 20px;
-            width: 90%;
-            max-width: 600px;
-            position: absolute;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            border-radius: 8px;
-            pointer-events: all; /* Make the buttons/text clickable */
-        }
-        
-        #game-message {
-            position: absolute;
-            bottom: 60px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 1.5em;
-            background: rgba(10, 10, 30, 0.7);
-            padding: 10px 20px;
-            border-radius: 8px;
-            border: 1px solid var(--neon-pink);
-        }
-
-        .exit-btn {
-            position: absolute;
-            bottom: 20px;
-            right: 20px;
-            width: 150px;
-            text-align: center;
-            pointer-events: all;
-            z-index: 3;
-        }
-        
-        /* Crosshair */
-        #crosshair {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 20px;
-            height: 20px;
-            transform: translate(-50%, -50%);
-            border: 1px solid var(--neon-pink);
-            border-radius: 50%;
-            box-shadow: 0 0 5px var(--neon-pink);
-            pointer-events: none;
-        }
-
-
-        /* Custom Alert Modal - kept as provided */
-        #message-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.8);
-            display: none;
-            place-items: center;
-            z-index: 2000;
-        }
-        #message-box {
-            background-color: var(--mid-bg);
-            border: 3px solid var(--neon-pink);
-            border-radius: 12px;
-            padding: 25px;
-            max-width: 400px;
-            width: 90%;
-            text-align: center;
-            box-shadow: 0 0 20px var(--neon-pink);
-        }
-        .modal-text {
-            margin-bottom: 20px;
-            font-size: 1.1rem;
-            color: var(--text-color);
-        }
-
-    </style>
+        .menu-button {
+            background-color: rgba(30, 30, 70, 0.8);
+            color: var(--neon-blue);
+            border: 1px solid var(--neon-blue);
+            padding: 15px 30px;
+            cursor: pointer;
+            font-size: 1.2em;
+            border-radius: 5px;
+            transition: all 0.2s ease;
+            width: 180px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .menu-button:hover {
+            background-color: var(--neon-blue);
+            color: var(--dark-bg);
+            box-shadow: 0 0 20px rgba(0, 196, 255, 0.5);
+        }
+        
+        .sub-screen h2 {
+            font-size: 2em;
+            color: var(--neon-pink);
+            border-bottom: 2px solid var(--neon-pink);
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+        }
+    </style>
 </head>
 <body>
-    <!-- Main Menu Screen (Full Screen Layout) -->
-    <div class="main-menu-container" id="main-menu-container">
-        <h1 class="main-title">THE G.O.A.T. PROJECT</h1>
-        
-        <!-- User Info Display -->
-        <div id="user-info" class="absolute top-2 right-4 text-xs sm:text-sm text-neon-blue text-center"></div>
+    <div class="main-menu-container" id="main-menu-container">
+        <h1 class="main-title">THE G.O.A.T. PROJECT</h1>
+        
+        <div class="menu-bar">
+            <button class="menu-button" onclick="quickPlay()">QUICK PLAY (DIAGNOSTIC)</button>
+            <button class="menu-button" onclick="loadMissions()">MISSIONS</button>
+            <button class="menu-button" onclick="loadMyHub()">MY HUB</button>
+            <button class="menu-button" onclick="loadOptions()">OPTIONS</button>
+            <button class="menu-button" onclick="quitGame()">QUIT</button>
+        </div>
+    </div>
 
-        <!-- Menu Bar (Fixed to bottom) -->
-        <div class="menu-bar">
-            <button class="menu-button" onclick="quickPlay()">QUICK PLAY (3D)</button>
-            <button class="menu-button" onclick="loadMissions()">MISSIONS</button>
-            <button class="menu-button" onclick="loadMyHub()">MY HUB</button>
-            <button class="menu-button" onclick="loadOptions()">OPTIONS</button>
-            <button class="menu-button" onclick="quitGame()">QUIT</button>
-        </div>
-    </div>
+    <div class="missions-log-container hidden sub-screen" id="missions-screen">
+        <h2>MISSIONS LOG</h2>
+        <p>Diagnostic: Missions screen is open.</p>
+        <button class="menu-button mt-8 w-full max-w-[200px] text-center" onclick="showMainMenu()">BACK</button>
+    </div>
+    
+    <div class="my-player-container hidden sub-screen" id="my-hub-screen">
+        <h2>MY HUB</h2>
+        <p>Diagnostic: My Hub screen is open.</p>
+        <button class="menu-button mt-8 w-full max-w-[200px] text-center" onclick="showMainMenu()">BACK</button>
+    </div>
 
-    <!-- QUICK PLAY GAME SCREEN (3D Physics Simulation) -->
-    <div id="quick-play-game-screen" class="hidden">
-        
-        <!-- The Renderer will attach to this div -->
-        <div id="canvas-container" class="w-full h-full"></div>
-        
-        <!-- Game UI Overlay -->
-        <div class="game-ui-overlay">
-            <div id="crosshair"></div>
-            
-            <div class="control-bar flex justify-between">
-                <div id="score-display" class="text-lg font-bold text-neon-blue">SCORE: 0</div>
-                <div id="high-score-display" class="text-lg font-bold text-neon-pink">BEST: 0</div>
-                <div id="shots-fired" class="text-lg font-bold text-neon-blue">SHOTS: 0</div>
-            </div>
+    <div class="options-container hidden sub-screen" id="options-screen">
+        <h2>OPTIONS</h2>
+        <p>Diagnostic: Options screen is open.</p>
+        <button class="menu-button mt-8 w-full max-w-[200px] text-center" onclick="showMainMenu()">BACK</button>
+    </div>
 
-            <p id="game-message" class="text-center font-bold text-neon-pink">
-                Click to aim, WASD to move, SPACE to shoot!
-            </p>
-            
-            <button class="menu-button exit-btn text-center" onclick="showMainMenu()">
-                <i class="fas fa-arrow-left mr-2"></i>EXIT GAME
-            </button>
-        </div>
-    </div>
+    <div class="quit-container hidden sub-screen" id="quit-screen">
+        <h2>QUIT</h2>
+        <p>Diagnostic: Quit screen is open.</p>
+        <button class="menu-button mt-8 w-full max-w-[200px] text-center" onclick="showMainMenu()">BACK</button>
+    </div>
+    
+    <div class="my-player-container hidden sub-screen" id="quick-play-screen">
+        <h2>QUICK PLAY (DIAGNOSTIC)</h2>
+        <p>Diagnostic: Quick Play screen is open.</p>
+        <button class="menu-button mt-8 w-full max-w-[200px] text-center" onclick="showMainMenu()">BACK</button>
+    </div>
 
-    <!-- MISSIONS LOG SCREEN -->
-    <div class="missions-log-container hidden" id="missions-screen">
-        <h2>MISSIONS LOG</h2>
-        <div class="w-full flex flex-col gap-3">
-            <button class="mission-item" id="mission-1-button" onclick="startMission(1)">1. The Jump Start (STATUS)</button>
-            <button class="mission-item" id="mission-2-button" onclick="startMission(2)">2. The Rookie Contract (STATUS)</button>
-        </div>
-        <button class="menu-button mt-8 w-full max-w-[200px] text-center" onclick="showMainMenu()">BACK</button>
-    </div>
-    
-    <!-- MY HUB SCREEN -->
-    <div class="my-player-container hidden" id="my-hub-screen">
-        <h2>MY HUB</h2>
-        <p class="text-gray-300">Welcome to your personal dashboard.</p>
-        <div class="flex flex-col gap-3 mt-6">
-            <button class="menu-button text-center" onclick="loadMyStats()">VIEW MY STATS</button>
-            <button class="menu-button text-center" onclick="loadTraining()">TRAINING FACILITY</button>
-        </div>
-        <button class="menu-button mt-8 w-full max-w-[200px] text-center" onclick="showMainMenu()">BACK</button>
-    </div>
+    <script>
+        const screenIds = [
+            'main-menu-container', 'missions-screen', 'my-hub-screen', 
+            'options-screen', 'quit-screen', 'quick-play-screen'
+        ];
 
-    <!-- MY STATS SCREEN -->
-    <div class="my-player-container hidden" id="my-stats-screen">
-        <h2>MY PLAYER STATS</h2>
-        <div class="mt-4 p-4 bg-dark-bg rounded-lg border border-neon-blue/50">
-            <p class="mb-2"><strong>Player ID:</strong> <span id="player-id-display">N/A</span></p>
-            <p class="mb-2"><strong>Overall Rating:</strong> <span id="stats-overall-rating">75</span></p>
-            <p class="mb-2"><strong>Position:</strong> Point Guard</p>
-            <p class="mb-2"><strong>Quick Play High Score:</strong> <span id="stats-high-score">0</span></p>
-        </div>
-        <p class="mt-4 text-center" id="stats-current-mission"><strong>Current Mission:</strong> The Jump Start</p>
-        <div class="progress-bar-container">
-            <div id="mission-progress-bar" style="width: 0%;"></div>
-        </div>
-        <button class="menu-button w-full max-w-[200px] text-center" onclick="loadMyHub()">BACK TO HUB</button>
-    </div>
+        function showScreen(screenId) {
+            screenIds.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    if (id === screenId) {
+                        element.classList.remove('hidden');
+                        element.style.display = (id === 'main-menu-container') ? 'flex' : 'block';
+                    } else {
+                        element.classList.add('hidden');
+                    }
+                }
+            });
+        }
 
-    <!-- OPTIONS SCREEN -->
-    <div class="options-container hidden" id="options-screen">
-        <h2>OPTIONS</h2>
-        <div class="p-4 bg-dark-bg rounded-lg border border-neon-pink/50">
-            <p class="mb-2 text-left">VOLUME: [|||||||||||--]</p>
-            <p class="mb-2 text-left">DIFFICULTY: Rookie</p>
-            <p class="text-left">LANGUAGE: English</p>
-        </div>
-        <button class="menu-button mt-8 w-full max-w-[200px] text-center" onclick="showMainMenu()">BACK</button>
-    </div>
+        window.showMainMenu = function() {
+            showScreen('main-menu-container');
+        }
 
-    <!-- QUIT SCREEN -->
-    <div class="quit-container hidden" id="quit-screen">
-        <h2>GAME OVER</h2>
-        <p class="text-gray-300">Thanks for playing THE G.O.A.T. PROJECT demo!</p>
-        <p class="text-gray-300">You can close your browser tab now.</p>
-        <button class="menu-button mt-8 w-full max-w-[200px] text-center" onclick="showMainMenu()">START NEW GAME</button>
-    </div>
-    
-    <!-- MISSION 1 SCREEN (Power Meter) - kept as provided -->
-    <div class="mission-screen hidden" id="mission-1-screen">
-        <h2>MISSION 1: THE JUMP START</h2>
-        <p class="text-gray-300">Coach says: Hit the button when the meter reaches 95 for a perfect pass!</p>
-        
-        <div class="mission-content">
-            <h1 id="meter-display">0</h1>
-            <button class="skill-button" onclick="stopMeter()">SHOOT / PASS</button>
-        </div>
+        window.quickPlay = function() {
+            showScreen('quick-play-screen');
+        }
 
-        <div id="mission-feedback" class="text-xl font-bold"></div>
+        window.loadMissions = function() {
+            showScreen('missions-screen');
+        }
 
-        <button class="menu-button mt-8 w-full max-w-[200px] text-center" onclick="showMainMenu()">EXIT MISSION</button>
-    </div>
-    
-    <!-- MISSION 2 SCREEN (Rookie Contract) - kept as provided -->
-    <div class="mission-screen hidden" id="mission-2-screen">
-        <h2>MISSION 2: THE ROOKIE CONTRACT</h2>
-        <p class="text-gray-300">Your agent, Mr. Smith, has two contract offers for you. He asks: **Which offer do you take?**</p>
-        
-        <div class="mission-content flex flex-col items-center">
-            <button class="contract-button" onclick="completeMission2(1)">Option 1: Small Bonus, High Incentives (+5 OVERALL)</button>
-            <button class="contract-button" onclick="completeMission2(0)">Option 2: Large Bonus, Low Incentives (+1 OVERALL)</button>
-        </div>
-        
-        <button class="menu-button mt-8 w-full max-w-[200px] text-center" onclick="showMainMenu()">EXIT MISSION</button>
-    </div>
+        window.loadMyHub = function() {
+            showScreen('my-hub-screen');
+        }
 
-    <!-- Custom Message Modal (Replaces alert() and confirm()) -->
-    <div id="message-modal" class="hidden" style="display: none;">
-        <div id="message-box">
-            <p id="modal-text" class="modal-text"></p>
-            <button class="neon-btn text-sm" onclick="hideMessageBox()">OK</button>
-        </div>
-    </div>
+        window.loadOptions = function() {
+            showScreen('options-screen');
+        }
 
-    <!-- Combined JavaScript for Firebase, Menu Navigation, and Game Logic -->
-    <script type="module">
-        // --- Firebase Setup ---
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        window.quitGame = function() {
+            showScreen('quit-screen');
+        }
 
-        // Global Firebase and Canvas variables (MUST BE USED)
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-        
-        let app, db, auth;
-        let userId = 'guest';
-        let isAuthReady = false;
-        
-        const FIREBASE_COLLECTION = `artifacts/${appId}/users`;
-        const FIREBASE_DOC_ID = 'game_data';
-
-        // --- GAME STATE VARIABLES (Persistent across session/reloads, synced with Firestore) ---
-        let playerCurrentMission = 1; 
-        let playerOverall = 75;
-        let missionProgress = 0;
-        let meterInterval = null;
-        let meterValue = 0;
-        
-        // --- 3D GAME STATE VARIABLES ---
-        let scene, camera, renderer, world;
-        let ballMesh, ballBody;
-        let groundBody, hoopBodies = [];
-        let canShoot = true; // Limits shooting spam
-        let animationFrameId = null;
-        let isGameRunning = false;
-        
-        // Player/Camera Control State
-        const moveSpeed = 0.5;
-        const shotPower = 35; // How hard the ball is launched
-        const velocity = new THREE.Vector3();
-        const direction = new THREE.Vector3();
-        let moveForward = false;
-        let moveBackward = false;
-        let moveLeft = false;
-        let moveRight = false;
-        
-        // Game Scoring State
-        let quickPlayData = { score: 0, highScore: 0, shots: 0 };
-        const timeStep = 1 / 60; // Cannon.js physics step
-
-        // --- CUSTOM MESSAGE BOX (Replaces alert() and confirm()) ---
-        function showMessageBox(message, callback = null) {
-            document.getElementById('modal-text').textContent = message;
-            document.getElementById('message-modal').style.display = 'grid';
-            
-            const okButton = document.querySelector('#message-box button');
-            okButton.onclick = () => {
-                hideMessageBox();
-                if (callback) callback();
-            };
-        }
-
-        function hideMessageBox() {
-            document.getElementById('message-modal').style.display = 'none';
-        }
-
-        // --- SAVE/LOAD GAME STATE (Mission/Overall for non-quick-play state) ---
-        function saveGame() {
-            const gameState = {
-                mission: playerCurrentMission,
-                overall: playerOverall,
-                progress: missionProgress
-            };
-            localStorage.setItem('goatProjectSave', JSON.stringify(gameState));
-            console.log("Player Mission State Saved to localStorage!");
-        }
-
-        function loadGame() {
-            const savedState = localStorage.getItem('goatProjectSave');
-            if (savedState) {
-                const gameState = JSON.parse(savedState);
-                playerCurrentMission = gameState.mission;
-                playerOverall = gameState.overall;
-                missionProgress = gameState.progress;
-                console.log(`Player Mission State Loaded! Current Mission: ${playerCurrentMission}, Overall: ${playerOverall}`);
-            } else {
-                console.log("No saved player mission state found. Starting new game.");
-            }
-        }
-        
-        // --- FIREBASE HIGH SCORE FUNCTIONS (For Quick Play persistence) ---
-        
-        const updateGameUI = () => {
-            const scoreDisplayEl = document.getElementById('score-display');
-            const highScoreDisplayEl = document.getElementById('high-score-display');
-            const shotsFiredEl = document.getElementById('shots-fired');
-            
-            if (scoreDisplayEl) scoreDisplayEl.textContent = `SCORE: ${quickPlayData.score}`;
-            if (highScoreDisplayEl) highScoreDisplayEl.textContent = `BEST: ${quickPlayData.highScore}`;
-            if (shotsFiredEl) shotsFiredEl.textContent = `SHOTS: ${quickPlayData.shots}`;
-        };
-
-        const initializeFirebase = async () => {
-            if (!firebaseConfig) {
-                console.error("Firebase config is missing. Data persistence disabled.");
-                isAuthReady = true;
-                loadGame(); // Load non-firestore data immediately
-                return;
-            }
-            try {
-                app = initializeApp(firebaseConfig);
-                db = getFirestore(app);
-                auth = getAuth(app);
-                
-                if (initialAuthToken) {
-                    await signInWithCustomToken(auth, initialAuthToken);
-                } else {
-                    await signInAnonymously(auth);
-                }
-
-                onAuthStateChanged(auth, (user) => {
-                    if (user) {
-                        userId = user.uid;
-                    } else {
-                        // Fallback to anonymous ID if initial auth fails
-                        userId = crypto.randomUUID();
-                    }
-                    isAuthReady = true;
-                    document.getElementById('user-info').innerHTML = `<i class="fas fa-user text-neon-pink mr-1"></i> ID: ${userId.substring(0, 8)}...`;
-                    document.getElementById('player-id-display').textContent = userId;
-                    loadGame(); // Load localStorage data
-                    loadGameData(); // Start listening to Firestore
-                });
-            } catch (error) {
-                console.error("Error initializing Firebase or signing in:", error);
-                isAuthReady = true;
-                loadGame(); // Load non-firestore data
-            }
-        };
-
-        const loadGameData = () => {
-            if (!isAuthReady || !db) return;
-            // Document path: /artifacts/{appId}/users/{userId}/data/game_data
-            const docRef = doc(db, FIREBASE_COLLECTION, userId, 'data', FIREBASE_DOC_ID);
-            
-            onSnapshot(docRef, (docSnap) => {
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    // Update only quick play high score from Firestore
-                    quickPlayData.highScore = data.highScore || 0;
-                } else {
-                    quickPlayData.highScore = 0;
-                    saveGameData(); // Initialize document if it doesn't exist
-                }
-                updateGameUI();
-                const statsHighScoreEl = document.getElementById('stats-high-score');
-                if(statsHighScoreEl) statsHighScoreEl.textContent = quickPlayData.highScore;
-            }, (error) => {
-                console.error("Error listening to quick play data:", error);
-            });
-        };
-
-        const saveGameData = () => {
-            if (!isAuthReady || !db || quickPlayData.score <= quickPlayData.highScore) return;
-            
-            const docRef = doc(db, FIREBASE_COLLECTION, userId, 'data', FIREBASE_DOC_ID);
-            quickPlayData.highScore = quickPlayData.score; // New high score is the current score
-            
-            setDoc(docRef, { 
-                highScore: quickPlayData.highScore
-            }, { merge: true }).then(() => {
-                updateGameUI();
-                console.log(`New High Score Saved: ${quickPlayData.highScore}`);
-            }).catch(error => {
-                console.error("Error saving quick play data:", error);
-            });
-        };
-        
-        // --- SCREEN MANAGEMENT ---
-        const screenIds = [
-            'main-menu-container', 'quick-play-game-screen',
-            'missions-screen', 'my-hub-screen', 
-            'my-stats-screen', 'options-screen', 'quit-screen',
-            'mission-1-screen', 'mission-2-screen'
-        ];
-
-        function showScreen(screenId) {
-            screenIds.forEach(id => {
-                const element = document.getElementById(id);
-                if (element) {
-                    if (id === screenId) {
-                        element.classList.remove('hidden');
-                        element.style.display = (id === 'main-menu-container' || id === 'quick-play-game-screen') ? 'flex' : 'block';
-                    } else {
-                        element.classList.add('hidden');
-                    }
-                }
-            });
-
-            // Game loop management for 3D
-            if (screenId === 'quick-play-game-screen') {
-                if (!isGameRunning) {
-                    initGame();
-                    isGameRunning = true;
-                    requestAnimationFrame(gameLoop);
-                }
-                // Request pointer lock when entering game screen
-                const canvasContainer = document.getElementById('canvas-container');
-                if (canvasContainer) canvasContainer.requestPointerLock();
-                
-            } else {
-                if (isGameRunning) {
-                    stopGame();
-                }
-            }
-        }
-
-        // --- MENU & NAVIGATION FUNCTIONS ---
-
-        window.showMainMenu = function() { // Exposed globally for HTML buttons
-            if (meterInterval) {
-                clearInterval(meterInterval);
-                meterInterval = null;
-            }
-            if (isGameRunning) {
-                stopGame();
-            }
-            showScreen('main-menu-container');
-        }
-
-        window.quickPlay = function() {
-            showScreen('quick-play-game-screen');
-        }
-
-        window.loadMissions = function() {
-            // ... (Mission logic kept as provided) ...
-            showScreen('missions-screen');
-            
-            let mission1Button = document.getElementById('mission-1-button');
-            let mission2Button = document.getElementById('mission-2-button');
-            
-            if (playerCurrentMission === 1) {
-                mission1Button.textContent = `1. The Jump Start (IN PROGRESS, ${missionProgress}%)`;
-                mission2Button.textContent = "2. The Rookie Contract (LOCKED)";
-                mission2Button.onclick = () => showMessageBox("Mission 2 is LOCKED! Complete Mission 1 first.");
-                mission2Button.disabled = true;
-            } else if (playerCurrentMission === 2) {
-                mission1Button.textContent = "1. The Jump Start (COMPLETED)";
-                mission2Button.textContent = "2. The Rookie Contract (AVAILABLE)";
-                mission2Button.onclick = () => startMission(2);
-                mission2Button.disabled = false;
-            } else { // playerCurrentMission >= 3
-                mission1Button.textContent = "1. The Jump Start (COMPLETED)";
-                mission2Button.textContent = "2. The Rookie Contract (COMPLETED)";
-                mission2Button.onclick = () => showMessageBox("All main missions are complete!");
-                mission2Button.disabled = true;
-            }
-        }
-
-        window.loadMyHub = function() {
-            showScreen('my-hub-screen');
-        }
-
-        window.loadMyStats = function() {
-            showScreen('my-stats-screen');
-            
-            let missionTitle;
-            let progress;
-
-            if (playerCurrentMission === 1) {
-                missionTitle = "The Jump Start";
-                progress = missionProgress;
-            } else if (playerCurrentMission === 2) {
-                missionTitle = "The Rookie Contract";
-                progress = 50; 
-            } else {
-                missionTitle = "THE G.O.A.T.!";
-                progress = 100;
-            }
-
-            document.getElementById('stats-overall-rating').textContent = playerOverall;
-            document.getElementById('stats-current-mission').innerHTML = `<strong>Current Mission:</strong> ${missionTitle}`;
-            document.getElementById('mission-progress-bar').style.width = progress + '%';
-        }
-
-        window.loadTraining = function() {
-            showMessageBox("Training Facility Coming Soon!");
-        }
-
-        window.loadOptions = function() {
-            showScreen('options-screen');
-        }
-
-        window.quitGame = function() {
-            showScreen('quit-screen');
-        }
-
-        // --- MISSION & GAMEPLAY LOGIC (Power Meter and Contract) ---
-        // (Kept as provided)
-
-        window.startMission = function(missionId) {
-            if (missionId === 1 && playerCurrentMission === 1) {
-                launchMission1();
-            } else if (missionId === 2 && playerCurrentMission >= 2) {
-                launchMission2();
-            } else if (missionId === 1 && playerCurrentMission > 1) {
-                showMessageBox("Mission 1 is already complete!");
-                loadMissions();
-            } else if (missionId === 2 && playerCurrentMission < 2) {
-                showMessageBox("Mission 2 is LOCKED! Complete Mission 1 first.");
-                loadMissions();
-            }
-        }
-
-        window.launchMission1 = function() {
-            showScreen('mission-1-screen');
-            meterValue = 0;
-            document.getElementById('meter-display').textContent = meterValue;
-            document.getElementById('mission-feedback').innerHTML = '';
-            
-            if (meterInterv
+        document.addEventListener('DOMContentLoaded', () => {
+            showMainMenu();
+        });
+    </script> 
+</body>
+</html>
