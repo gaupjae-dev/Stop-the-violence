@@ -16,153 +16,71 @@ body {
     color: white;
     margin: 0;
     padding: 0;
-    display: flex;
-    flex-direction: column; 
     min-height: 100vh;
     background-color: #000;
-    background-image: none;
     overflow-x: hidden;
 }
 
-/* HIDDEN UTILITY CLASS */
-.hidden { display: none !important; }
-
-
-/* * !!! NEW LAYOUT FOR MAIN MENU ONLY (FULL SCREEN OVERLAY) !!! 
- * Title: Center-Left | Main Modes: Center-Right | Utility: Bottom-Left
-*/
-.main-menu-container {
+/* --- MAIN MENU CONTAINER (Full Screen, Centered Flex) --- */
+#main-menu-container {
     width: 100%;
-    height: 100vh; 
-    max-width: none;
-    padding: 40px; 
-    border: none;
-    background: none;
-    box-shadow: none;
+    min-height: 100vh;
+    padding: 20px;
     
-    /* NEW: This container is now the main vertical Flexbox */
+    /* Center Content */
     display: flex;
     flex-direction: column; 
-    justify-content: space-between; /* Pushes the main content area (center) and utility (bottom) apart */
-    align-items: flex-start; /* Default alignment (left side) */
-}
-
-/* --- Main Content Area: Holds Title (Left) and Main Modes (Right) --- */
-.main-menu-top {
-    width: 100%;
-    height: 100%; /* Makes this section fill the space between the body and the bottom menu */
-    display: flex;
-    justify-content: space-between; /* Pushes the Title/Wrapper to opposite sides */
-    align-items: center; /* NEW: Centers the title and button wrapper vertically in the middle of the screen */
+    justify-content: center;
+    align-items: center; 
+    text-align: center;
 }
 
 /* --- Styling for the Title (THE G.O.A.T. PROJECT) --- */
-.main-menu-container .main-title {
+#main-menu-container h1 {
     font-family: 'Exo 2', sans-serif;
     font-weight: 900;
-    font-size: 5em;
+    font-size: clamp(3em, 8vw, 6em); /* Responsive font sizing */
     color: var(--neon-blue);
     text-shadow: 0 0 15px rgba(0, 196, 255, 0.8), 0 0 5px rgba(0, 196, 255, 0.5);
     letter-spacing: 2px;
-    margin: 0;
-    text-align: left; 
-    /* NEW: Added a small margin to pull it slightly away from the far left edge */
-    margin-left: 50px; 
+    margin-bottom: 40px;
+    animation: flicker 1.5s infinite alternate;
 }
 
-/* --- Styling for the Main Menu Items (Center Right Stack) --- */
-.main-modes-wrapper {
+/* Flicker effect for the main title */
+@keyframes flicker {
+    0%, 18%, 22%, 25%, 53%, 57%, 100% {
+        opacity: 1;
+        text-shadow: 0 0 10px var(--neon-blue);
+    }
+    20%, 24%, 55% {        
+        opacity: 0.8;
+        text-shadow: none;
+    }
+}
+
+/* Menu button group for spacing */
+.menu-button-group {
     display: flex;
-    flex-direction: column; 
-    align-items: flex-end; 
-    gap: 10px; /* Reduced gap between buttons */
-    /* NEW: Added a small margin to pull it slightly away from the far right edge */
-    margin-right: 50px; 
+    flex-direction: column;
+    gap: 15px;
+    width: 90%;
+    max-width: 350px;
 }
 
-/* Make the main buttons smaller (half the size) and align text right */
-.main-modes-wrapper .menu-button {
-    width: 150px; /* NEW: Half size of the previous 250px (approximation) */
-    font-size: 1em; /* NEW: Smaller font size */
-    text-align: right; 
-    padding: 10px 20px; /* NEW: Smaller padding */
-    margin: 0; 
-}
-
-/* --- Styling for the Utility Menu Items (Bottom Left Stack) --- */
-.main-menu-bottom {
-    display: flex;
-    flex-direction: column; 
-    align-items: flex-start; 
-    gap: 10px;
-}
-
-/* Make utility buttons smaller and left-aligned */
-.main-menu-bottom .menu-button {
-    width: 180px;
-    font-size: 1em;
-    text-align: left;
-    padding: 10px 15px;
-    margin: 0; 
-}
-
-/* --- Responsive adjustment for small screens (Mobile View) --- */
-@media (max-width: 768px) {
-    .main-menu-container {
-        padding: 20px;
-    }
-    .main-menu-top {
-        flex-direction: column; 
-        gap: 20px;
-        align-items: center; /* Center everything on mobile */
-    }
-    .main-menu-container .main-title {
-        text-align: center;
-        width: 100%;
-        font-size: 3.5em; 
-        margin-left: 0; /* Remove side margin on mobile */
-    }
-    .main-modes-wrapper {
-        width: 100%;
-        align-items: center; 
-        gap: 10px;
-        margin-right: 0; /* Remove side margin on mobile */
-    }
-    .main-modes-wrapper .menu-button {
-        width: 80%;
-        text-align: center;
-        font-size: 1.2em;
-        padding: 12px 25px; 
-    }
-    .main-menu-bottom {
-        width: 100%;
-        align-items: center; 
-        gap: 10px;
-    }
-    .main-menu-bottom .menu-button {
-        width: 60%;
-        text-align: center;
-    }
-}
-
-
-/* --- Other Screen and Component Styling (Unchanged) --- */
-
-/* CONTAINER STYLING (Shared appearance for ALL SUB-SCREENS) */
-.missions-log-container,
-.my-player-container,
-.options-container,
-.quit-container,
-.mission-screen {
+/* --- CONTAINER STYLING (Shared appearance for ALL SUB-SCREENS) --- */
+.content-screen {
     background: rgba(10, 10, 30, 0.9);
     padding: 40px;
     border-radius: 10px;
     box-shadow: 0 0 30px rgba(0, 196, 255, 0.3);
-    width: 450px;
-    max-width: 95%; 
+    width: 90%;
+    max-width: 500px;
     text-align: center;
     border: 1px solid var(--neon-blue);
     min-height: 400px; 
+    
+    /* Center the sub-screens */
     position: absolute;
     top: 50%;
     left: 50%;
@@ -170,59 +88,72 @@ body {
     z-index: 10;
 }
 
+.content-screen h2 {
+    color: var(--neon-pink);
+    text-shadow: 0 0 8px rgba(255, 0, 255, 0.5);
+    margin-bottom: 30px;
+}
+
 /* --- BUTTON STYLING (Shared Button Styles) --- */
-.menu-button, .skill-button, .contract-button { 
+button, .menu-button-group button, .mission-list button { 
     background-color: rgba(30, 30, 70, 0.8); 
     color: var(--neon-blue);
     border: 1px solid var(--neon-blue); 
     padding: 15px 30px;
-    margin: 10px 0;
+    margin: 0; /* Managed by parent gap */
     cursor: pointer;
     font-size: 1.2em;
-    border-radius: 5px;
+    border-radius: 8px;
     transition: all 0.2s ease;
     width: 100%; 
     font-weight: bold;
+    text-transform: uppercase;
 }
 
-.menu-button:hover, .skill-button:hover, .contract-button:hover {
+button:hover:not([disabled]) {
     background-color: var(--neon-blue); 
     color: var(--dark-bg); 
     box-shadow: 0 0 20px rgba(0, 196, 255, 0.5);
+    transform: translateY(-2px);
 }
 
-/* Mission Item Button Style */
-.mission-item {
-    background-color: rgba(30, 30, 70, 0.8);
-    color: white;
-    border: 1px solid var(--neon-pink);
-    padding: 12px 20px;
-    margin: 8px 0;
-    cursor: pointer;
-    font-size: 1em;
-    border-radius: 5px;
-    transition: all 0.2s ease;
-    width: 100%;
-    text-align: left;
-}
-
-.mission-item:hover:not([disabled]) {
-    background-color: rgba(255, 0, 255, 0.2);
-    box-shadow: 0 0 15px rgba(255, 0, 255, 0.6);
-}
-
-.mission-item[disabled] {
+button[disabled] {
     opacity: 0.5;
     cursor: not-allowed;
     border-color: #555;
     color: #aaa;
 }
 
-/* PLAYER STATS & PROGRESS BAR */
-.my-player-container p {
+/* Specific styling for the BACK button */
+.back-button {
+    margin-top: 30px;
+    padding: 10px 20px;
+    font-size: 1em;
+    background-color: rgba(70, 30, 30, 0.8); 
+    border-color: var(--neon-pink);
+    color: var(--neon-pink);
+    width: 60%;
+    max-width: 250px;
+}
+
+.back-button:hover:not([disabled]) {
+    background-color: var(--neon-pink); 
+    color: var(--dark-bg); 
+    box-shadow: 0 0 20px rgba(255, 0, 255, 0.5);
+    border-color: var(--neon-pink);
+}
+
+/* --- MY STATS STYLING --- */
+#my-stats-screen p {
     text-align: left;
-    margin: 10px 0;
+    margin: 15px 0;
     font-size: 1.1em;
+}
+#my-stats-screen hr {
+    border: 0;
+    height: 1px;
+    background-image: linear-gradient(to right, rgba(0, 196, 255, 0), var(--neon-blue), rgba(0, 196, 255, 0));
+    margin: 20px 0;
 }
 
 /* Styling for the Mission Progress Bar */
@@ -236,61 +167,87 @@ body {
     overflow: hidden; 
 }
 
-.progress-bar {
+#mission-progress-bar { /* The fill element */
     height: 100%;
     width: 0%;
     background-color: var(--neon-pink);
+    box-shadow: 0 0 10px var(--neon-pink);
     transition: width 0.5s ease-in-out;
 }
 
-/* MISSION GAMEPLAY STYLING (Mission 1 & 2 Screens) */
-
-/* Mission 1: The Meter Display */
-.mission-content {
+/* --- MISSION 1: THE JUMP START STYLING --- */
+.meter-area {
     margin: 50px 0;
+}
+.meter-area p {
+    font-size: 1.2em;
+    color: var(--text-color);
 }
 
 #meter-display {
-    font-size: 6em;
-    font-weight: bold;
+    font-size: clamp(3em, 10vw, 6em);
+    font-weight: 900;
     color: var(--neon-pink);
     text-shadow: 0 0 20px rgba(255, 0, 255, 0.8);
     margin-bottom: 30px;
 }
 
-/* MISSION 1: SHOOT / PASS Button */
-.skill-button {
+.meter-area button { /* The STOP METER! button */
     background-color: var(--neon-pink);
     color: var(--dark-bg);
     border: none;
     padding: 20px 40px;
-    margin-top: 20px;
-    cursor: pointer;
     font-size: 1.5em;
-    font-weight: bold;
-    border-radius: 5px;
-    transition: all 0.2s ease;
-    text-transform: uppercase;
-    width: auto; 
+    text-shadow: none;
     border: 1px solid var(--neon-pink);
 }
 
-.skill-button:hover {
+.meter-area button:hover {
     background-color: var(--neon-blue);
     color: var(--dark-bg);
     box-shadow: 0 0 20px rgba(0, 196, 255, 0.5);
-    border: 1px solid var(--neon-blue);
+    border-color: var(--neon-blue);
 }
 
-/* Mission Feedback Text */
-#mission-feedback p {
-    font-size: 1.2em;
+.feedback-message {
+    min-height: 40px;
     margin-top: 20px;
 }
 
-/* Mission 2: Contract Buttons */
-.contract-button {
-    display: block;
-    width: 80%;
-    margin: 20px auto;
+/* --- MISSION 2: CONTRACT CHOICE STYLING --- */
+.choice-button-group {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+/* --- CUSTOM MODAL (Replaces alert()) --- */
+#custom-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: none; /* Hidden by default */
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+#custom-modal-content {
+    background-color: var(--mid-bg);
+    border: 3px solid var(--neon-blue);
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 0 40px rgba(0, 196, 255, 0.6);
+    text-align: center;
+    max-width: 80%;
+}
+
+#custom-modal-text {
+    color: var(--neon-blue);
+    font-weight: bold;
+    font-size: 1.3em;
 }
