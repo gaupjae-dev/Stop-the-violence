@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>3D Explorer - Fortnite Edition</title>
+    <title>3D Explorer - AI Battle Edition</title>
     <style>
         body { margin: 0; overflow: hidden; font-family: sans-serif; }
         #ui {
@@ -9,7 +9,11 @@
             color: white; background: rgba(0,0,0,0.7); padding: 15px;
             border-radius: 8px; pointer-events: none;
         }
-        /* Inventory Slot */
+        #stats {
+            position: absolute; top: 10px; right: 10px;
+            color: white; background: rgba(255,0,0,0.5); padding: 10px;
+            border-radius: 8px; text-align: right;
+        }
         #inventory {
             position: absolute; bottom: 20px; right: 20px;
             width: 80px; height: 80px;
@@ -17,8 +21,6 @@
             display: flex; align-items: center; justify-content: center;
             color: white; font-weight: bold; border-radius: 10px;
         }
-        #inventory.active { border-color: #ffd600; background: rgba(255, 214, 0, 0.2); }
-        
         #crosshair {
             position: absolute; top: 50%; left: 50%;
             width: 8px; height: 8px; border: 2px solid white;
@@ -29,10 +31,14 @@
 <body>
     <div id="ui">
         <div>Move: <kbd>WASD</kbd> | Jump: <kbd>Space</kbd></div>
-        <div>Pick up Gun: <kbd>E</kbd> (Must be close)</div>
+        <div>Pick up Launcher: <kbd>E</kbd></div>
+    </div>
+    <div id="stats">
+        AI HP: <span id="ai-hp">100</span><br>
+        Your HP: <span id="player-hp">100</span>
     </div>
     <div id="crosshair"></div>
-    <div id="inventory" id="slot1">Empty</div>
+    <div id="inventory">Empty</div>
     
     <script type="module">
         import * as THREE from 'https://cdn.skypack.dev/three@0.136.0';
@@ -54,92 +60,114 @@
         ground.rotation.x = -Math.PI / 2;
         scene.add(ground);
 
-        // --- BRICK WALL ---
-        const wallGeo = new THREE.BoxGeometry(8, 4, 0.5);
-        const wallMat = new THREE.MeshStandardMaterial({ color: 0x8b0000 }); // Dark Red Brick color
-        const wall = new THREE.Mesh(wallGeo, wallMat);
-        wall.position.set(0, 2, -5);
-        scene.add(wall);
-
-        // --- GUN ON GROUND (Pickup) ---
-        const gunPickupGroup = new THREE.Group();
-        const gunBody = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.3, 1), new THREE.MeshStandardMaterial({ color: 0xffd600 }));
-        gunPickupGroup.add(gunBody);
-        gunPickupGroup.position.set(0, 0.5, -3); // In front of the wall
-        scene.add(gunPickupGroup);
-
         // --- PLAYER SETUP ---
         const playerGroup = new THREE.Group();
-        const torso = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1, 0.5), new THREE.MeshStandardMaterial({ color: 0x1976d2 }));
-        torso.position.y = 1.5;
-        playerGroup.add(torso);
-        const head = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5), new THREE.MeshStandardMaterial({ color: 0xffdbac }));
-        head.position.y = 2.3;
-        playerGroup.add(head);
+        const playerTorso = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1, 0.5), new THREE.MeshStandardMaterial({ color: 0x1976d2 }));
+        playerTorso.position.y = 1.5;
+        playerGroup.add(playerTorso);
+        const playerHead = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5), new THREE.MeshStandardMaterial({ color: 0xffdbac }));
+        playerHead.position.y = 2.3;
+        playerGroup.add(playerHead);
         scene.add(playerGroup);
 
-        // --- GAME STATE ---
+        // --- AI ENEMY SETUP ---
+        const aiGroup = new THREE.Group();
+        const aiTorso = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1, 0.5), new THREE.MeshStandardMaterial({ color: 0xcc0000 }));
+        aiTorso.position.y = 1.5;
+        aiGroup.add(aiTorso);
+        const aiHead = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5), new THREE.MeshStandardMaterial({ color: 0xffdbac }));
+        aiHead.position.y = 2.3;
+        aiGroup.add(aiHead);
+        
+        const aiLauncher = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.2, 0.8), new THREE.MeshStandardMaterial({ color: 0x333333 }));
+        aiLauncher.position.set(0.5, 1.5, -0.5);
+        aiGroup.add(aiLauncher);
+        
+        aiGroup.position.set(0, 0, -15);
+        scene.add(aiGroup);
+
+        // --- PICKUP ---
+        const pickup = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.3, 1), new THREE.MeshStandardMaterial({ color: 0xffd600 }));
+        pickup.position.set(0, 0.5, -5);
+        scene.add(pickup);
+
+        // --- STATE ---
+        let playerHP = 100;
+        let aiHP = 100;
         let hasGun = false;
-        const bullets = [];
+        let aiLastShot = 0;
+        const bullets = []; // { mesh, direction, owner }
         const keys = { w: false, a: false, s: false, d: false, e: false, ' ': false };
-        let velocityY = 0;
-        const gravity = -0.012;
-        let isGrounded = true;
 
         window.addEventListener('keydown', (e) => { keys[e.key.toLowerCase()] = true; });
         window.addEventListener('keyup', (e) => { keys[e.key.toLowerCase()] = false; });
 
-        // Click to shoot
         window.addEventListener('mousedown', () => {
-            if (!hasGun) return;
-            const bullet = new THREE.Mesh(new THREE.SphereGeometry(0.15), new THREE.MeshBasicMaterial({ color: 0xff0000 }));
-            bullet.position.set(playerGroup.position.x, playerGroup.position.y + 1.5, playerGroup.position.z);
-            scene.add(bullet);
-            bullets.push(bullet);
+            if (!hasGun || playerHP <= 0) return;
+            fireBullet(playerGroup, new THREE.Vector3(0, 0, -1), 'player');
         });
 
-        function animate() {
+        function fireBullet(owner, dir, type) {
+            const b = new THREE.Mesh(new THREE.SphereGeometry(0.15), new THREE.MeshBasicMaterial({ color: type === 'player' ? 0xffff00 : 0xff0000 }));
+            b.position.copy(owner.position).y += 1.5;
+            scene.add(b);
+            bullets.push({ mesh: b, dir: dir, type: type });
+        }
+
+        function animate(time) {
             requestAnimationFrame(animate);
 
-            // Movement
-            if (keys.w) playerGroup.position.z -= 0.12;
-            if (keys.s) playerGroup.position.z += 0.12;
-            if (keys.a) playerGroup.position.x -= 0.12;
-            if (keys.d) playerGroup.position.x += 0.12;
-
-            // Jump
-            if (keys[' '] && isGrounded) { velocityY = 0.25; isGrounded = false; }
-            velocityY += gravity;
-            playerGroup.position.y += velocityY;
-            if (playerGroup.position.y <= 0) { playerGroup.position.y = 0; velocityY = 0; isGrounded = true; }
-
-            // --- PICKUP LOGIC ---
-            const dist = playerGroup.position.distanceTo(gunPickupGroup.position);
-            if (keys.e && dist < 2 && !hasGun) {
-                hasGun = true;
-                scene.remove(gunPickupGroup); // Remove from ground
-                document.getElementById('inventory').innerHTML = "GUN";
-                document.getElementById('inventory').classList.add('active');
+            // Player Movement
+            if (playerHP > 0) {
+                if (keys.w) playerGroup.position.z -= 0.12;
+                if (keys.s) playerGroup.position.z += 0.12;
+                if (keys.a) playerGroup.position.x -= 0.12;
+                if (keys.d) playerGroup.position.x += 0.12;
                 
-                // Attach gun to player
-                const playerGun = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.2, 0.8), new THREE.MeshStandardMaterial({ color: 0xffd600 }));
-                playerGun.position.set(0.5, 1.5, -0.5);
-                playerGroup.add(playerGun);
+                if (keys.e && playerGroup.position.distanceTo(pickup.position) < 2) {
+                    hasGun = true;
+                    scene.remove(pickup);
+                    document.getElementById('inventory').innerHTML = "LAUNCHER";
+                    const pg = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.2, 0.8), new THREE.MeshStandardMaterial({ color: 0xffd600 }));
+                    pg.position.set(0.5, 1.5, -0.5);
+                    playerGroup.add(pg);
+                }
             }
 
-            // Bullet Logic
+            // AI Logic
+            if (aiHP > 0) {
+                aiGroup.lookAt(playerGroup.position);
+                if (time - aiLastShot > 2000) { // Shoot every 2 seconds
+                    const dir = new THREE.Vector3().subVectors(playerGroup.position, aiGroup.position).normalize();
+                    fireBullet(aiGroup, dir, 'ai');
+                    aiLastShot = time;
+                }
+            }
+
+            // Bullet Logic & Collision
             bullets.forEach((b, i) => {
-                b.position.z -= 0.5;
-                if (b.position.z < -50) { scene.remove(b); bullets.splice(i, 1); }
+                b.mesh.position.addScaledVector(b.dir, 0.4);
+                
+                // Hit AI
+                if (b.type === 'player' && b.mesh.position.distanceTo(aiGroup.position) < 1.5 && aiHP > 0) {
+                    aiHP -= 20;
+                    document.getElementById('ai-hp').innerText = aiHP;
+                    scene.remove(b.mesh); bullets.splice(i, 1);
+                    if (aiHP <= 0) scene.remove(aiGroup);
+                }
+                // Hit Player
+                if (b.type === 'ai' && b.mesh.position.distanceTo(playerGroup.position) < 1.5 && playerHP > 0) {
+                    playerHP -= 10;
+                    document.getElementById('player-hp').innerText = playerHP;
+                    scene.remove(b.mesh); bullets.splice(i, 1);
+                }
             });
 
-            // Camera follow
             camera.position.set(playerGroup.position.x, playerGroup.position.y + 5, playerGroup.position.z + 10);
-            camera.lookAt(playerGroup.position.x, playerGroup.position.y + 1.5, playerGroup.position.z);
-
+            camera.lookAt(playerGroup.position);
             renderer.render(scene, camera);
         }
-        animate();
+        animate(0);
     </script>
 </body>
 </html>
