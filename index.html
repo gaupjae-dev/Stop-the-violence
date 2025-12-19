@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>3D Explorer - Combat Edition</title>
+    <title>3D Explorer - Character Edition</title>
     <style>
         body { margin: 0; overflow: hidden; font-family: sans-serif; }
         #ui {
@@ -9,20 +9,13 @@
             color: white; background: rgba(0,0,0,0.7); padding: 15px;
             border-radius: 8px; pointer-events: none;
         }
-        #crosshair {
-            position: absolute; top: 50%; left: 50%;
-            width: 10px; height: 10px; border: 2px solid white;
-            border-radius: 50%; transform: translate(-50%, -50%);
-        }
         kbd { background: #444; border-radius: 3px; padding: 2px 5px; border: 1px solid #777; }
     </style>
 </head>
 <body>
     <div id="ui">
         <div>Move: <kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> | Jump: <kbd>Space</kbd></div>
-        <div style="margin-top: 8px;">Fire: <kbd>Left Click</kbd></div>
     </div>
-    <div id="crosshair"></div>
     
     <script type="module">
         import * as THREE from 'https://cdn.skypack.dev/three@0.136.0';
@@ -37,7 +30,7 @@
         const light = new THREE.DirectionalLight(0xffffff, 1);
         light.position.set(5, 10, 7.5);
         scene.add(light);
-        scene.add(new THREE.AmbientLight(0x404040, 1.2));
+        scene.add(new THREE.AmbientLight(0x404040, 1.5));
 
         // Ground
         const ground = new THREE.Mesh(
@@ -47,41 +40,45 @@
         ground.rotation.x = -Math.PI / 2;
         scene.add(ground);
 
-        // Player Group (Holds the body and the tool)
+        // --- HUMANOID PLAYER SETUP ---
         const playerGroup = new THREE.Group();
-        const body = new THREE.Mesh(
-            new THREE.BoxGeometry(1, 2, 1),
-            new THREE.MeshStandardMaterial({ color: 0x1976d2 })
-        );
-        body.position.y = 1;
-        playerGroup.add(body);
+        const skinMat = new THREE.MeshStandardMaterial({ color: 0xffdbac }); // Skin tone
+        const clothMat = new THREE.MeshStandardMaterial({ color: 0x1976d2 }); // Blue shirt
+        const pantMat = new THREE.MeshStandardMaterial({ color: 0x333333 }); // Dark pants
 
-        // The Launcher (The "Gun")
-        const launcher = new THREE.Mesh(
-            new THREE.BoxGeometry(0.4, 0.4, 1.2),
-            new THREE.MeshStandardMaterial({ color: 0xffd600 }) // Yellow
-        );
-        launcher.position.set(0.6, 1.2, -0.5); // Positioned to the side like a held item
-        playerGroup.add(launcher);
+        // Torso
+        const torso = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1, 0.5), clothMat);
+        torso.position.y = 1.5;
+        playerGroup.add(torso);
+
+        // Head
+        const head = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5), skinMat);
+        head.position.y = 2.3;
+        playerGroup.add(head);
+
+        // Arms
+        const armGeo = new THREE.BoxGeometry(0.3, 0.8, 0.3);
+        const leftArm = new THREE.Mesh(armGeo, skinMat);
+        leftArm.position.set(-0.6, 1.5, 0);
+        playerGroup.add(leftArm);
+
+        const rightArm = new THREE.Mesh(armGeo, skinMat);
+        rightArm.position.set(0.6, 1.5, 0);
+        playerGroup.add(rightArm);
+
+        // Legs
+        const legGeo = new THREE.BoxGeometry(0.35, 1, 0.35);
+        const leftLeg = new THREE.Mesh(legGeo, pantMat);
+        leftLeg.position.set(-0.25, 0.5, 0);
+        playerGroup.add(leftLeg);
+
+        const rightLeg = new THREE.Mesh(legGeo, pantMat);
+        rightLeg.position.set(0.25, 0.5, 0);
+        playerGroup.add(rightLeg);
 
         scene.add(playerGroup);
 
-        // Projectiles Array
-        const bullets = [];
-
-        // Shooting Logic
-        window.addEventListener('mousedown', () => {
-            const bullet = new THREE.Mesh(
-                new THREE.SphereGeometry(0.2),
-                new THREE.MeshBasicMaterial({ color: 0xff0000 }) // Red
-            );
-            // Start bullet at the launcher position
-            bullet.position.set(playerGroup.position.x + 0.6, playerGroup.position.y + 1.2, playerGroup.position.z - 1);
-            scene.add(bullet);
-            bullets.push({ mesh: bullet, time: 0 });
-        });
-
-        // Trees
+        // --- WORLD OBJECTS ---
         function createTree(x, z) {
             const treeGroup = new THREE.Group();
             const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 1.5), new THREE.MeshStandardMaterial({ color: 0x5d4037 }));
@@ -94,12 +91,13 @@
         }
         createTree(5, -5); createTree(-5, -10);
 
-        // Physics/Movement
+        // --- CONTROLS & PHYSICS ---
         const keys = { w: false, a: false, s: false, d: false, ' ': false };
         let velocityY = 0;
         const gravity = -0.012;
         const jumpStrength = 0.25;
         let isGrounded = true;
+        let walkCycle = 0;
 
         window.addEventListener('keydown', (e) => { if (e.key === ' ') keys[' '] = true; else keys[e.key.toLowerCase()] = true; });
         window.addEventListener('keyup', (e) => { if (e.key === ' ') keys[' '] = false; else keys[e.key.toLowerCase()] = false; });
@@ -107,30 +105,37 @@
         function animate() {
             requestAnimationFrame(animate);
 
-            if (keys.w) playerGroup.position.z -= 0.12;
-            if (keys.s) playerGroup.position.z += 0.12;
-            if (keys.a) playerGroup.position.x -= 0.12;
-            if (keys.d) playerGroup.position.x += 0.12;
+            let isMoving = false;
+            if (keys.w) { playerGroup.position.z -= 0.12; isMoving = true; }
+            if (keys.s) { playerGroup.position.z += 0.12; isMoving = true; }
+            if (keys.a) { playerGroup.position.x -= 0.12; isMoving = true; }
+            if (keys.d) { playerGroup.position.x += 0.12; isMoving = true; }
 
+            // Jumping
             if (keys[' '] && isGrounded) { velocityY = jumpStrength; isGrounded = false; }
             velocityY += gravity;
             playerGroup.position.y += velocityY;
             if (playerGroup.position.y <= 0) { playerGroup.position.y = 0; velocityY = 0; isGrounded = true; }
 
-            // Handle Bullets
-            bullets.forEach((b, index) => {
-                b.mesh.position.z -= 0.5; // Bullet speed
-                b.time++;
-                if (b.time > 100) { // Remove bullet after a while
-                    scene.remove(b.mesh);
-                    bullets.splice(index, 1);
-                }
-            });
+            // Walking Animation
+            if (isMoving && isGrounded) {
+                walkCycle += 0.15;
+                leftArm.rotation.x = Math.sin(walkCycle) * 0.5;
+                rightArm.rotation.x = -Math.sin(walkCycle) * 0.5;
+                leftLeg.rotation.x = -Math.sin(walkCycle) * 0.5;
+                rightLeg.rotation.x = Math.sin(walkCycle) * 0.5;
+            } else {
+                // Reset positions when standing still
+                leftArm.rotation.x = 0;
+                rightArm.rotation.x = 0;
+                leftLeg.rotation.x = 0;
+                rightLeg.rotation.x = 0;
+            }
 
             camera.position.x = playerGroup.position.x;
-            camera.position.z = playerGroup.position.z + 12;
-            camera.position.y = playerGroup.position.y + 4;
-            camera.lookAt(playerGroup.position);
+            camera.position.z = playerGroup.position.z + 10;
+            camera.position.y = playerGroup.position.y + 5;
+            camera.lookAt(playerGroup.position.x, playerGroup.position.y + 1.5, playerGroup.position.z);
 
             renderer.render(scene, camera);
         }
