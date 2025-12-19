@@ -1,48 +1,57 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>3D Explorer - AI Battle Edition</title>
+    <title>3D Battle - Full Game</title>
     <style>
-        body { margin: 0; overflow: hidden; font-family: sans-serif; }
-        #ui {
-            position: absolute; top: 10px; left: 10px;
-            color: white; background: rgba(0,0,0,0.7); padding: 15px;
-            border-radius: 8px; pointer-events: none;
+        body { margin: 0; overflow: hidden; font-family: 'Arial Black', sans-serif; background-color: #000; }
+        #ui { 
+            position: absolute; top: 10px; left: 10px; 
+            color: white; background: rgba(0,0,0,0.7); padding: 15px; 
+            border-radius: 8px; pointer-events: none; font-family: sans-serif;
         }
-        #stats {
-            position: absolute; top: 10px; right: 10px;
-            color: white; background: rgba(255,0,0,0.5); padding: 10px;
-            border-radius: 8px; text-align: right;
+        #stats { 
+            position: absolute; top: 10px; right: 10px; 
+            color: white; background: rgba(0,0,0,0.5); padding: 10px; 
+            border-radius: 8px; text-align: right; 
         }
-        #inventory {
-            position: absolute; bottom: 20px; right: 20px;
-            width: 80px; height: 80px;
-            background: rgba(0,0,0,0.6); border: 3px solid #555;
-            display: flex; align-items: center; justify-content: center;
-            color: white; font-weight: bold; border-radius: 10px;
+        #eliminated { 
+            position: absolute; top: 30%; left: 50%; transform: translate(-50%, -50%);
+            color: #ffd600; font-size: 60px; text-shadow: 4px 4px #000;
+            display: none; pointer-events: none; z-index: 10;
         }
-        #crosshair {
-            position: absolute; top: 50%; left: 50%;
-            width: 8px; height: 8px; border: 2px solid white;
-            border-radius: 50%; transform: translate(-50%, -50%);
+        #inventory { 
+            position: absolute; bottom: 20px; right: 20px; 
+            width: 90px; height: 90px; 
+            background: rgba(0,0,0,0.8); border: 4px solid #555; 
+            display: flex; align-items: center; justify-content: center; 
+            color: white; border-radius: 12px; font-size: 14px;
         }
+        .active-slot { border-color: #ffd600 !important; background: rgba(255, 214, 0, 0.2) !important; }
+        #crosshair { 
+            position: absolute; top: 50%; left: 50%; 
+            width: 10px; height: 10px; border: 2px solid white; 
+            border-radius: 50%; transform: translate(-50%, -50%); 
+        }
+        kbd { background: #333; padding: 2px 4px; border-radius: 3px; border: 1px solid #777; }
     </style>
 </head>
 <body>
     <div id="ui">
-        <div>Move: <kbd>WASD</kbd> | Jump: <kbd>Space</kbd></div>
-        <div>Pick up Launcher: <kbd>E</kbd></div>
+        <kbd>WASD</kbd> Move | <kbd>SPACE</kbd> Jump<br>
+        <kbd>E</kbd> Pickup Gun | <kbd>CLICK</kbd> Shoot
     </div>
     <div id="stats">
-        AI HP: <span id="ai-hp">100</span><br>
-        Your HP: <span id="player-hp">100</span>
+        ENEMY: <span id="ai-hp" style="color: #ff4444;">100</span> HP<br>
+        YOU: <span id="player-hp" style="color: #44ff44;">100</span> HP
     </div>
+    <div id="eliminated">ELIMINATED</div>
     <div id="crosshair"></div>
-    <div id="inventory">Empty</div>
+    <div id="inventory">EMPTY</div>
     
     <script type="module">
         import * as THREE from 'https://cdn.skypack.dev/three@0.136.0';
 
+        // 1. SCENE SETUP
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(0x87CEEB);
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -50,124 +59,127 @@
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
-        const light = new THREE.DirectionalLight(0xffffff, 1);
-        light.position.set(5, 10, 7.5);
-        scene.add(light);
-        scene.add(new THREE.AmbientLight(0x404040, 1.5));
+        const light = new THREE.AmbientLight(0xffffff, 0.6); scene.add(light);
+        const sun = new THREE.DirectionalLight(0xffffff, 1); sun.position.set(5, 10, 7.5); scene.add(sun);
 
-        // Ground
+        // 2. WORLD
         const ground = new THREE.Mesh(new THREE.PlaneGeometry(200, 200), new THREE.MeshStandardMaterial({ color: 0x2e7d32 }));
-        ground.rotation.x = -Math.PI / 2;
-        scene.add(ground);
+        ground.rotation.x = -Math.PI / 2; scene.add(ground);
 
-        // --- PLAYER SETUP ---
-        const playerGroup = new THREE.Group();
-        const playerTorso = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1, 0.5), new THREE.MeshStandardMaterial({ color: 0x1976d2 }));
-        playerTorso.position.y = 1.5;
-        playerGroup.add(playerTorso);
-        const playerHead = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5), new THREE.MeshStandardMaterial({ color: 0xffdbac }));
-        playerHead.position.y = 2.3;
-        playerGroup.add(playerHead);
-        scene.add(playerGroup);
+        const wall = new THREE.Mesh(new THREE.BoxGeometry(10, 5, 1), new THREE.MeshStandardMaterial({ color: 0x8b0000 }));
+        wall.position.set(0, 2.5, -10); scene.add(wall);
 
-        // --- AI ENEMY SETUP ---
-        const aiGroup = new THREE.Group();
-        const aiTorso = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1, 0.5), new THREE.MeshStandardMaterial({ color: 0xcc0000 }));
-        aiTorso.position.y = 1.5;
-        aiGroup.add(aiTorso);
-        const aiHead = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5), new THREE.MeshStandardMaterial({ color: 0xffdbac }));
-        aiHead.position.y = 2.3;
-        aiGroup.add(aiHead);
-        
-        const aiLauncher = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.2, 0.8), new THREE.MeshStandardMaterial({ color: 0x333333 }));
-        aiLauncher.position.set(0.5, 1.5, -0.5);
-        aiGroup.add(aiLauncher);
-        
-        aiGroup.position.set(0, 0, -15);
-        scene.add(aiGroup);
+        const pickupGun = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.3, 1), new THREE.MeshStandardMaterial({ color: 0xffd600 }));
+        pickupGun.position.set(0, 0.5, -7); scene.add(pickupGun);
 
-        // --- PICKUP ---
-        const pickup = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.3, 1), new THREE.MeshStandardMaterial({ color: 0xffd600 }));
-        pickup.position.set(0, 0.5, -5);
-        scene.add(pickup);
-
-        // --- STATE ---
-        let playerHP = 100;
-        let aiHP = 100;
-        let hasGun = false;
-        let aiLastShot = 0;
-        const bullets = []; // { mesh, direction, owner }
-        const keys = { w: false, a: false, s: false, d: false, e: false, ' ': false };
-
-        window.addEventListener('keydown', (e) => { keys[e.key.toLowerCase()] = true; });
-        window.addEventListener('keyup', (e) => { keys[e.key.toLowerCase()] = false; });
-
-        window.addEventListener('mousedown', () => {
-            if (!hasGun || playerHP <= 0) return;
-            fireBullet(playerGroup, new THREE.Vector3(0, 0, -1), 'player');
-        });
-
-        function fireBullet(owner, dir, type) {
-            const b = new THREE.Mesh(new THREE.SphereGeometry(0.15), new THREE.MeshBasicMaterial({ color: type === 'player' ? 0xffff00 : 0xff0000 }));
-            b.position.copy(owner.position).y += 1.5;
-            scene.add(b);
-            bullets.push({ mesh: b, dir: dir, type: type });
+        // 3. CHARACTERS
+        function createCharacter(color) {
+            const group = new THREE.Group();
+            const torso = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1, 0.5), new THREE.MeshStandardMaterial({ color: color }));
+            torso.position.y = 1.5; group.add(torso);
+            const head = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5), new THREE.MeshStandardMaterial({ color: 0xffdbac }));
+            head.position.y = 2.3; group.add(head);
+            const arm = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.8, 0.3), new THREE.MeshStandardMaterial({ color: 0xffdbac }));
+            arm.position.set(0.6, 1.5, 0); group.add(arm);
+            return group;
         }
 
-        function animate(time) {
+        const player = createCharacter(0x1976d2); scene.add(player);
+        const ai = createCharacter(0xcc0000); ai.position.set(0, 0, -20); scene.add(ai);
+
+        // 4. STATE & INPUT
+        let playerHP = 100, aiHP = 100, hasGun = false, aiLastShot = 0;
+        const bullets = [], keys = { w:false, a:false, s:false, d:false, e:false, ' ':false };
+        let velocityY = 0, isGrounded = true;
+
+        window.addEventListener('keydown', (e) => keys[e.key.toLowerCase()] = true);
+        window.addEventListener('keyup', (e) => keys[e.key.toLowerCase()] = false);
+        window.addEventListener('mousedown', () => {
+            if (hasGun && playerHP > 0) fireBullet(player, new THREE.Vector3(0,0,-1), 'player');
+        });
+
+        function fireBullet(owner, dir, side) {
+            const b = new THREE.Mesh(new THREE.SphereGeometry(0.15), new THREE.MeshBasicMaterial({ color: side === 'player' ? 0xffff00 : 0xff0000 }));
+            b.position.copy(owner.position).y += 1.8;
+            scene.add(b);
+            bullets.push({ mesh: b, dir: dir, side: side });
+        }
+
+        // 5. GAME LOOP
+        function animate(t) {
             requestAnimationFrame(animate);
 
-            // Player Movement
             if (playerHP > 0) {
-                if (keys.w) playerGroup.position.z -= 0.12;
-                if (keys.s) playerGroup.position.z += 0.12;
-                if (keys.a) playerGroup.position.x -= 0.12;
-                if (keys.d) playerGroup.position.x += 0.12;
+                // Movement
+                if (keys.w) player.position.z -= 0.15; if (keys.s) player.position.z += 0.15;
+                if (keys.a) player.position.x -= 0.15; if (keys.d) player.position.x += 0.15;
                 
-                if (keys.e && playerGroup.position.distanceTo(pickup.position) < 2) {
-                    hasGun = true;
-                    scene.remove(pickup);
-                    document.getElementById('inventory').innerHTML = "LAUNCHER";
-                    const pg = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.2, 0.8), new THREE.MeshStandardMaterial({ color: 0xffd600 }));
-                    pg.position.set(0.5, 1.5, -0.5);
-                    playerGroup.add(pg);
+                // Jumping
+                if (keys[' '] && isGrounded) { velocityY = 0.25; isGrounded = false; }
+                velocityY -= 0.012; player.position.y += velocityY;
+                if (player.position.y <= 0) { player.position.y = 0; velocityY = 0; isGrounded = true; }
+
+                // Pickup
+                if (keys.e && player.position.distanceTo(pickupGun.position) < 2 && !hasGun) {
+                    hasGun = true; scene.remove(pickupGun);
+                    const inv = document.getElementById('inventory');
+                    inv.innerText = "LAUNCHER"; inv.classList.add('active-slot');
+                    const g = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.2, 0.8), new THREE.MeshStandardMaterial({ color: 0xffd600 }));
+                    g.position.set(0.6, 1.5, -0.4); player.add(g);
                 }
             }
 
-            // AI Logic
+            // AI Combat
             if (aiHP > 0) {
-                aiGroup.lookAt(playerGroup.position);
-                if (time - aiLastShot > 2000) { // Shoot every 2 seconds
-                    const dir = new THREE.Vector3().subVectors(playerGroup.position, aiGroup.position).normalize();
-                    fireBullet(aiGroup, dir, 'ai');
-                    aiLastShot = time;
+                ai.lookAt(player.position);
+                if (t - aiLastShot > 1800) {
+                    const d = new THREE.Vector3().subVectors(player.position, ai.position).normalize();
+                    fireBullet(ai, d, 'ai'); aiLastShot = t;
                 }
             }
 
-            // Bullet Logic & Collision
+            // Physics & Collisions
             bullets.forEach((b, i) => {
-                b.mesh.position.addScaledVector(b.dir, 0.4);
-                
-                // Hit AI
-                if (b.type === 'player' && b.mesh.position.distanceTo(aiGroup.position) < 1.5 && aiHP > 0) {
-                    aiHP -= 20;
-                    document.getElementById('ai-hp').innerText = aiHP;
-                    scene.remove(b.mesh); bullets.splice(i, 1);
-                    if (aiHP <= 0) scene.remove(aiGroup);
+                b.mesh.position.addScaledVector(b.dir, 0.5);
+
+                if (b.side === 'player' && aiHP > 0) {
+                    // Headshot Check (35 DMG)
+                    const headPos = new THREE.Vector3(ai.position.x, ai.position.y + 2.3, ai.position.z);
+                    const bodyPos = new THREE.Vector3(ai.position.x, ai.position.y + 1.5, ai.position.z);
+                    
+                    if (b.mesh.position.distanceTo(headPos) < 0.5) {
+                        aiHP -= 35; scene.remove(b.mesh); bullets.splice(i, 1);
+                    } else if (b.mesh.position.distanceTo(bodyPos) < 0.8) {
+                        aiHP -= 19; scene.remove(b.mesh); bullets.splice(i, 1);
+                    }
+                    document.getElementById('ai-hp').innerText = Math.max(0, aiHP);
+                    if (aiHP <= 0) { 
+                        scene.remove(ai); 
+                        document.getElementById('eliminated').style.display = 'block'; 
+                    }
                 }
-                // Hit Player
-                if (b.type === 'ai' && b.mesh.position.distanceTo(playerGroup.position) < 1.5 && playerHP > 0) {
-                    playerHP -= 10;
-                    document.getElementById('player-hp').innerText = playerHP;
-                    scene.remove(b.mesh); bullets.splice(i, 1);
+
+                if (b.side === 'ai' && playerHP > 0) {
+                    if (b.mesh.position.distanceTo(new THREE.Vector3(player.position.x, player.position.y + 1.5, player.position.z)) < 0.8) {
+                        playerHP -= 10;
+                        document.getElementById('player-hp').innerText = Math.max(0, playerHP);
+                        scene.remove(b.mesh); bullets.splice(i, 1);
+                    }
                 }
+                if (b.mesh.position.length() > 100) { scene.remove(b.mesh); bullets.splice(i, 1); }
             });
 
-            camera.position.set(playerGroup.position.x, playerGroup.position.y + 5, playerGroup.position.z + 10);
-            camera.lookAt(playerGroup.position);
+            camera.position.set(player.position.x, player.position.y + 6, player.position.z + 12);
+            camera.lookAt(player.position.x, player.position.y + 1, player.position.z);
             renderer.render(scene, camera);
         }
         animate(0);
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
     </script>
 </body>
 </html>
