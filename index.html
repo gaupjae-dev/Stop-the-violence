@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>3D Battle - Win Streak Edition</title>
+    <title>3D Battle - Ammo & Map Update</title>
     <style>
         body { margin: 0; overflow: hidden; font-family: 'Arial Black', sans-serif; background-color: #111; }
         
@@ -38,16 +38,21 @@
             color: #ffd600; font-size: 60px; text-shadow: 4px 4px #000;
             display: none; pointer-events: none;
         }
+        /* Inventory Slot with Ammo */
         #inventory { 
-            position: absolute; bottom: 20px; right: 20px; width: 90px; height: 90px; 
+            position: absolute; bottom: 20px; right: 20px; width: 100px; height: 100px; 
             background: rgba(0,0,0,0.8); border: 4px solid #555; 
-            display: flex; align-items: center; justify-content: center; 
-            color: white; border-radius: 12px; font-size: 14px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            color: white; border-radius: 12px;
         }
+        #ammo-count { font-size: 20px; color: #ffd600; margin-top: 5px; }
+        .active-slot { border-color: #ffd600 !important; background: rgba(255, 214, 0, 0.2) !important; }
+        
         #crosshair { 
             position: absolute; top: 50%; left: 50%; width: 10px; height: 10px; 
             border: 2px solid white; border-radius: 50%; transform: translate(-50%, -50%); 
         }
+        kbd { background: #333; padding: 2px 4px; border-radius: 3px; border: 1px solid #777; font-family: sans-serif; }
     </style>
 </head>
 <body>
@@ -67,7 +72,10 @@
         <button id="lobby-button" onclick="goToLobby()">BACK TO LOBBY</button>
         <div id="eliminated">ELIMINATED</div>
         <div id="crosshair"></div>
-        <div id="inventory">EMPTY</div>
+        <div id="inventory">
+            <div id="inv-name">EMPTY</div>
+            <div id="ammo-count"></div>
+        </div>
     </div>
     
     <script type="module">
@@ -75,9 +83,9 @@
 
         let scene, camera, renderer, player, ai, pickupGun;
         let playerHP = 100, aiHP = 100, hasGun = false, inGame = false;
+        let ammo = 0, ammoBoxes = [], bushes = [], walls = [];
         let bullets = [], keys = {}, aiLastShot = 0, velocityY = 0, isGrounded = true;
         
-        // Load Streak from local storage
         let winStreak = parseInt(localStorage.getItem('battleWinStreak')) || 0;
         document.getElementById('streak-val').innerText = winStreak;
         document.getElementById('game-streak-val').innerText = winStreak;
@@ -93,48 +101,77 @@
             const light = new THREE.AmbientLight(0xffffff, 0.6); scene.add(light);
             const sun = new THREE.DirectionalLight(0xffffff, 1); sun.position.set(5, 10, 7.5); scene.add(sun);
 
-            const ground = new THREE.Mesh(new THREE.PlaneGeometry(200, 200), new THREE.MeshStandardMaterial({ color: 0x2e7d32 }));
+            // Ground
+            const ground = new THREE.Mesh(new THREE.PlaneGeometry(300, 300), new THREE.MeshStandardMaterial({ color: 0x2e7d32 }));
             ground.rotation.x = -Math.PI / 2; scene.add(ground);
 
-            const wall = new THREE.Mesh(new THREE.BoxGeometry(10, 5, 1), new THREE.MeshStandardMaterial({ color: 0x8b0000 }));
-            wall.position.set(0, 2.5, -10); scene.add(wall);
-
+            // Objects
+            createMap();
+            
             player = createCharacter(0x1976d2); scene.add(player);
-            ai = createCharacter(0xcc0000); ai.position.set(0, 0, -20); scene.add(ai);
+            ai = createCharacter(0xcc0000); ai.position.set(10, 0, -25); scene.add(ai);
 
             pickupGun = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.3, 1), new THREE.MeshStandardMaterial({ color: 0xffd600 }));
-            pickupGun.position.set(0, 0.5, -7); scene.add(pickupGun);
+            pickupGun.position.set(0, 0.5, -5); scene.add(pickupGun);
 
             animate(0);
         }
 
         function createCharacter(color) {
             const group = new THREE.Group();
-            const torso = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1, 0.5), new THREE.MeshStandardMaterial({ color: color }));
+            const torso = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1, 0.5), new THREE.MeshStandardMaterial({ color: color, transparent: true }));
             torso.position.y = 1.5; group.add(torso);
-            const head = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5), new THREE.MeshStandardMaterial({ color: 0xffdbac }));
+            const head = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5), new THREE.MeshStandardMaterial({ color: 0xffdbac, transparent: true }));
             head.position.y = 2.3; group.add(head);
             return group;
         }
 
+        function createMap() {
+            // Multiple Walls
+            const wallPos = [[-5, -15], [8, -10], [-10, -5], [15, -20], [-15, -25]];
+            wallPos.forEach(pos => {
+                const w = new THREE.Mesh(new THREE.BoxGeometry(6, 4, 1), new THREE.MeshStandardMaterial({ color: 0x8b0000 }));
+                w.position.set(pos[0], 2, pos[1]);
+                scene.add(w);
+                walls.push(w);
+            });
+
+            // 2 Bushes
+            const bushPos = [[-8, -8], [10, -18]];
+            bushPos.forEach(pos => {
+                const b = new THREE.Mesh(new THREE.SphereGeometry(1.5, 12, 12), new THREE.MeshStandardMaterial({ color: 0x1b5e20 }));
+                b.position.set(pos[0], 0.5, pos[1]);
+                scene.add(b);
+                bushes.push(b);
+            });
+
+            // Scatter Ammo Boxes
+            const ammoPos = [[5, -5], [-12, -15], [15, -10], [-5, -20]];
+            ammoPos.forEach(pos => {
+                const box = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.4, 0.6), new THREE.MeshStandardMaterial({ color: 0x444444 }));
+                const detail = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.1, 0.2), new THREE.MeshBasicMaterial({ color: 0x00ff00 }));
+                detail.position.y = 0.2;
+                const group = new THREE.Group(); group.add(box); group.add(detail);
+                group.position.set(pos[0], 0.2, pos[1]);
+                scene.add(group);
+                ammoBoxes.push(group);
+            });
+        }
+
         window.startGame = function() {
-            playerHP = 100; aiHP = 100; hasGun = false;
+            playerHP = 100; aiHP = 100; hasGun = false; ammo = 0;
             document.getElementById('player-hp').innerText = "100";
             document.getElementById('ai-hp').innerText = "100";
-            document.getElementById('inventory').innerText = "EMPTY";
+            document.getElementById('inv-name').innerText = "EMPTY";
+            document.getElementById('ammo-count').innerText = "";
             document.getElementById('eliminated').style.display = 'none';
             document.getElementById('lobby-button').style.display = 'none';
+            document.getElementById('inventory').classList.remove('active-slot');
             
-            player.position.set(0,0,0);
-            ai.position.set(0,0,-20);
+            player.position.set(0,0,5);
+            ai.position.set(10,0,-25);
             if (!scene.children.includes(ai)) scene.add(ai);
             if (!scene.children.includes(pickupGun)) scene.add(pickupGun);
-            
-            // Remove launcher if held
-            for(let i = player.children.length - 1; i >= 0; i--) {
-                const obj = player.children[i];
-                if(obj.type === "Mesh" && obj.geometry.type === "BoxGeometry" && obj.position.x > 0) player.remove(obj);
-            }
 
             document.getElementById('lobby-overlay').style.display = 'none';
             document.getElementById('game-ui').style.display = 'block';
@@ -145,26 +182,17 @@
             document.getElementById('lobby-overlay').style.display = 'flex';
             document.getElementById('game-ui').style.display = 'none';
             inGame = false;
-            // Clean up old bullets
-            bullets.forEach(b => scene.remove(b.mesh));
-            bullets = [];
-        }
-
-        function updateStreak(win) {
-            if (win) {
-                winStreak++;
-            } else {
-                winStreak = 0;
-            }
-            localStorage.setItem('battleWinStreak', winStreak);
-            document.getElementById('streak-val').innerText = winStreak;
-            document.getElementById('game-streak-val').innerText = winStreak;
         }
 
         window.addEventListener('keydown', (e) => keys[e.key.toLowerCase()] = true);
         window.addEventListener('keyup', (e) => keys[e.key.toLowerCase()] = false);
+        
         window.addEventListener('mousedown', () => {
-            if (inGame && hasGun && playerHP > 0) fireBullet(player, new THREE.Vector3(0,0,-1), 'player');
+            if (inGame && hasGun && playerHP > 0 && ammo > 0) {
+                fireBullet(player, new THREE.Vector3(0,0,-1), 'player');
+                ammo--;
+                document.getElementById('ammo-count').innerText = ammo;
+            }
         });
 
         function fireBullet(owner, dir, side) {
@@ -185,15 +213,38 @@
                 velocityY -= 0.012; player.position.y += velocityY;
                 if (player.position.y <= 0) { player.position.y = 0; velocityY = 0; isGrounded = true; }
 
+                // Pickup Gun
                 if (keys.e && player.position.distanceTo(pickupGun.position) < 2 && !hasGun) {
-                    hasGun = true; scene.remove(pickupGun);
-                    document.getElementById('inventory').innerText = "LAUNCHER";
+                    hasGun = true; ammo = 28;
+                    scene.remove(pickupGun);
+                    document.getElementById('inv-name').innerText = "LAUNCHER";
+                    document.getElementById('ammo-count').innerText = ammo;
+                    document.getElementById('inventory').classList.add('active-slot');
                     const g = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.2, 0.8), new THREE.MeshStandardMaterial({ color: 0xffd600 }));
                     g.position.set(0.6, 1.5, -0.4); player.add(g);
                 }
+
+                // Pickup Ammo
+                ammoBoxes.forEach((box, i) => {
+                    if (player.position.distanceTo(box.position) < 1.5) {
+                        ammo += 15;
+                        if(hasGun) document.getElementById('ammo-count').innerText = ammo;
+                        scene.remove(box);
+                        ammoBoxes.splice(i, 1);
+                    }
+                });
+
+                // Hiding in Bushes
+                let inBush = false;
+                bushes.forEach(b => {
+                    if (player.position.distanceTo(b.position) < 1.8) inBush = true;
+                });
+                player.children.forEach(part => part.material.opacity = inBush ? 0.3 : 1.0);
             }
 
-            if (aiHP > 0 && playerHP > 0) {
+            // AI Combat (AI doesn't shoot if player is hiding in bush)
+            let playerHidden = player.children[0].material.opacity < 1.0;
+            if (aiHP > 0 && playerHP > 0 && !playerHidden) {
                 ai.lookAt(player.position);
                 if (t - aiLastShot > 1800) {
                     const d = new THREE.Vector3().subVectors(player.position, ai.position).normalize();
@@ -203,32 +254,25 @@
 
             bullets.forEach((b, i) => {
                 b.mesh.position.addScaledVector(b.dir, 0.5);
-                
-                if (b.side === 'player' && aiHP > 0) {
-                    const head = new THREE.Vector3(ai.position.x, ai.position.y + 2.3, ai.position.z);
-                    const body = new THREE.Vector3(ai.position.x, ai.position.y + 1.5, ai.position.z);
-                    if (b.mesh.position.distanceTo(head) < 0.6) {
+                if (b.side === 'player') {
+                    if (b.mesh.position.distanceTo(new THREE.Vector3(ai.position.x, ai.position.y + 2.3, ai.position.z)) < 0.6) {
                         aiHP -= 35; scene.remove(b.mesh); bullets.splice(i, 1);
-                    } else if (b.mesh.position.distanceTo(body) < 0.8) {
+                    } else if (b.mesh.position.distanceTo(new THREE.Vector3(ai.position.x, ai.position.y + 1.5, ai.position.z)) < 0.8) {
                         aiHP -= 19; scene.remove(b.mesh); bullets.splice(i, 1);
                     }
                     document.getElementById('ai-hp').innerText = Math.max(0, aiHP);
                     if (aiHP <= 0) { 
-                        scene.remove(ai); 
-                        document.getElementById('eliminated').style.display = 'block'; 
+                        scene.remove(ai); document.getElementById('eliminated').style.display = 'block'; 
                         document.getElementById('lobby-button').style.display = 'block';
-                        updateStreak(true);
+                        winStreak++; localStorage.setItem('battleWinStreak', winStreak);
                     }
                 }
-                
-                if (b.side === 'ai' && playerHP > 0) {
-                    if (b.mesh.position.distanceTo(new THREE.Vector3(player.position.x, player.position.y + 1.5, player.position.z)) < 0.8) {
-                        playerHP -= 10; document.getElementById('player-hp').innerText = Math.max(0, playerHP);
-                        scene.remove(b.mesh); bullets.splice(i, 1);
-                        if (playerHP <= 0) {
-                            document.getElementById('lobby-button').style.display = 'block';
-                            updateStreak(false);
-                        }
+                if (b.side === 'ai' && b.mesh.position.distanceTo(new THREE.Vector3(player.position.x, player.position.y + 1.5, player.position.z)) < 0.8) {
+                    playerHP -= 10; document.getElementById('player-hp').innerText = Math.max(0, playerHP);
+                    scene.remove(b.mesh); bullets.splice(i, 1);
+                    if (playerHP <= 0) {
+                        document.getElementById('lobby-button').style.display = 'block';
+                        winStreak = 0; localStorage.setItem('battleWinStreak', 0);
                     }
                 }
             });
@@ -237,7 +281,6 @@
             camera.lookAt(player.position.x, player.position.y + 1, player.position.z);
             renderer.render(scene, camera);
         }
-
         init();
     </script>
 </body>
