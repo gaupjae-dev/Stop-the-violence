@@ -1,18 +1,15 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>3D Explorer - Jump Edition</title>
+    <title>3D Explorer - Tree Edition</title>
     <style>
-        body { margin: 0; overflow: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { margin: 0; overflow: hidden; font-family: sans-serif; }
         #ui {
             position: absolute; top: 10px; left: 10px;
             color: white; background: rgba(0,0,0,0.7); padding: 15px;
             border-radius: 8px; pointer-events: none;
         }
-        kbd {
-            background: #444; border-radius: 3px; padding: 2px 5px;
-            border: 1px solid #777;
-        }
+        kbd { background: #444; border-radius: 3px; padding: 2px 5px; border: 1px solid #777; }
     </style>
 </head>
 <body>
@@ -24,39 +21,65 @@
     <script type="module">
         import * as THREE from 'https://cdn.skypack.dev/three@0.136.0';
 
-        // 1. Scene & Camera Setup
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x87CEEB); // Sky Blue
+        scene.background = new THREE.Color(0x87CEEB);
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
-        // 2. Lighting
         const light = new THREE.DirectionalLight(0xffffff, 1);
         light.position.set(5, 10, 7.5);
         scene.add(light);
         scene.add(new THREE.AmbientLight(0x404040, 1.2));
 
-        // 3. The Ground
-        const groundGeo = new THREE.PlaneGeometry(200, 200);
-        const groundMat = new THREE.MeshStandardMaterial({ color: 0x2e7d32 }); // Grass Green
-        const ground = new THREE.Mesh(groundGeo, groundMat);
+        // Ground
+        const ground = new THREE.Mesh(
+            new THREE.PlaneGeometry(200, 200),
+            new THREE.MeshStandardMaterial({ color: 0x2e7d32 })
+        );
         ground.rotation.x = -Math.PI / 2;
         scene.add(ground);
 
-        // 4. The Player
-        const playerGeo = new THREE.BoxGeometry(1, 2, 1);
-        const playerMat = new THREE.MeshStandardMaterial({ color: 0x1976d2 }); // Blue
-        const player = new THREE.Mesh(playerGeo, playerMat);
+        // Player
+        const player = new THREE.Mesh(
+            new THREE.BoxGeometry(1, 2, 1),
+            new THREE.MeshStandardMaterial({ color: 0x1976d2 })
+        );
         player.position.y = 1; 
         scene.add(player);
 
+        // --- TREE GENERATOR FUNCTION ---
+        function createTree(x, z) {
+            const treeGroup = new THREE.Group();
+
+            // Trunk (Cylinder)
+            const trunk = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.2, 0.2, 1.5),
+                new THREE.MeshStandardMaterial({ color: 0x5d4037 })
+            );
+            trunk.position.y = 0.75;
+
+            // Leaves (Cone)
+            const leaves = new THREE.Mesh(
+                new THREE.ConeGeometry(1.2, 2.5, 8),
+                new THREE.MeshStandardMaterial({ color: 0x1b5e20 })
+            );
+            leaves.position.y = 2.5;
+
+            treeGroup.add(trunk);
+            treeGroup.add(leaves);
+            treeGroup.position.set(x, 0, z);
+            scene.add(treeGroup);
+        }
+
+        // Add 2 Trees at specific positions
+        createTree(5, -5);   // Tree 1
+        createTree(-5, -10); // Tree 2
+
         camera.position.set(0, 5, 10);
 
-        // 5. Physics & Input Variables
         const keys = { w: false, a: false, s: false, d: false, ' ': false };
-        const moveSpeed = 0.12;
         let velocityY = 0;
         const gravity = -0.012;
         const jumpStrength = 0.25;
@@ -71,34 +94,28 @@
             else keys[e.key.toLowerCase()] = false;
         });
 
-        // 6. Game Loop
         function animate() {
             requestAnimationFrame(animate);
 
-            // WASD Movement
-            if (keys.w) player.position.z -= moveSpeed;
-            if (keys.s) player.position.z += moveSpeed;
-            if (keys.a) player.position.x -= moveSpeed;
-            if (keys.d) player.position.x += moveSpeed;
+            if (keys.w) player.position.z -= 0.12;
+            if (keys.s) player.position.z += 0.12;
+            if (keys.a) player.position.x -= 0.12;
+            if (keys.d) player.position.x += 0.12;
 
-            // Jump Logic
             if (keys[' '] && isGrounded) {
                 velocityY = jumpStrength;
                 isGrounded = false;
             }
 
-            // Apply Gravity
             velocityY += gravity;
             player.position.y += velocityY;
 
-            // Ground Collision (Floor is at Y = 1 because player is 2 units tall)
             if (player.position.y <= 1) {
                 player.position.y = 1;
                 velocityY = 0;
                 isGrounded = true;
             }
 
-            // Camera follow (Smooth-ish)
             camera.position.x = player.position.x;
             camera.position.z = player.position.z + 12;
             camera.position.y = player.position.y + 4;
@@ -109,7 +126,6 @@
 
         animate();
 
-        // Handle Resize
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
